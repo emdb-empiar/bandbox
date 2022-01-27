@@ -55,7 +55,7 @@ class Tree(UserDict):
                 string += f" {self._recursive_string(extraction_point=extraction_point[key], indent=indent)}\n"
                 indent = indent[:-1]
             else:
-                string += f"{indent}└── [{len(value)} file(s)]"
+                string += f"{indent}└── [{len(value)} file(s)]\n"
                 indent = indent[:-1]
         return string
 
