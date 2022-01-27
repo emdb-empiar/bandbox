@@ -11,12 +11,9 @@ import re
 import sys
 from collections import UserDict
 
-data = ['10003/', '10003/10003.xml', '10003/data', '10003/data/full_set', '10003/data/full_set/raw00001.dat',
-        '10003/data/full_set/raw00002.dat', '10003/data/full_set/raw00005.dat', '10003/data/full_set/raw00006.dat',
-        '10003/data/full_set/raw00007.dat', '10003/data/full_set/raw00008.dat', '10003/data/full_set/raw00009.dat',
-        '10003/data/full_set/raw00010.dat', '10003/data/full_set/raw00012.dat', '10003/data/full_set/raw00013.dat',
-        '10003/data/full_set/raw00014.dat', '10003/data/full_set/raw00015.dat', '10003/data/full_set/raw00016.dat', ]
-FILE_CRE = re.compile(r"^([^.]*\.[^.]*|.*\.(jpg|jpeg|mrc|mrcs|tif|tiff|dm4|txt|box))$", re.IGNORECASE)
+
+FILE_EXTENSIONS = "jpg,jpeg,mrc,mrcs,tif,tiff,dm4,txt,box,cfg,fixed,st,rec,map"
+FILE_CRE = re.compile(rf"^([^.]*\.[^.]*|.*\.({'|'.join(FILE_EXTENSIONS.split(','))}))$", re.IGNORECASE)
 
 
 class Tree(UserDict):
