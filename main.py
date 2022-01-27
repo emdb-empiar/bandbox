@@ -52,11 +52,11 @@ class Tree(UserDict):
             if isinstance(value, dict):
                 string += f"{indent}└── {key}\n"
                 indent += "\t"
-                string += f" {self._recursive_string(extraction_point=extraction_point[key], indent=indent)}\n"
+                string += f" {self._recursive_string(extraction_point=extraction_point[key], indent=indent)}"
                 indent = indent[:-1]
             else:
                 string += f"{indent}└── [{len(value)} file(s)]\n"
-                indent = indent[:-1]
+                # indent = indent[:-1]
         return string
 
     def __str__(self):
@@ -77,8 +77,13 @@ def main():
     parser.add_argument('path', default='.', help="path to diagnose [default: '.']")
     parser.add_argument('-p', '--prefix', default='', help="prefix to exclude [default: '']")
     parser.add_argument('-d', '--display-paths', default=False, action='store_true', help="display all the directories found [default: False]")
+    parser.add_argument('-i', '--input-data', help="input data from a file")
     args = parser.parse_args()
-    data = glob.glob(str(pathlib.Path(os.path.expanduser(args.path)) / "**"), recursive=True)
+    if args.input_data:
+        with open(args.input_data) as f:
+            data = f.read().strip().split(', ')
+    else:
+        data = glob.glob(str(pathlib.Path(os.path.expanduser(args.path)) / "**"), recursive=True)
     tree = Tree.from_data(data, prefix=args.prefix)
     if args.display_paths:
         print(data)
