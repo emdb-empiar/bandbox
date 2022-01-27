@@ -12,7 +12,7 @@ import sys
 from collections import UserDict
 
 
-FILE_EXTENSIONS = "jpg,jpeg,mrc,mrcs,tif,tiff,dm4,txt,box,cfg,fixed,st,rec,map,bak,eer"
+FILE_EXTENSIONS = "jpg,jpeg,mrc,mrcs,tif,tiff,dm4,txt,box,cfg,fixed,st,rec,map,bak,eer,bz2,gz,zip"
 FILE_CRE = re.compile(rf"^([^.]*\.[^.]*|.*\.({'|'.join(FILE_EXTENSIONS.split(','))}))$", re.IGNORECASE)
 
 
