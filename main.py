@@ -2,6 +2,7 @@
 
 # Press ⌃R to execute it or replace it with your code.
 # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+import argparse
 import glob
 import json
 import os
@@ -72,19 +73,17 @@ class Tree(UserDict):
 
 
 def main():
-    try:
-        path = sys.argv[1]
-    except IndexError:
-        path = "~/PycharmProjects/oil/world_availability/10310"
-    try:
-        prefix = sys.argv[2]
-    except IndexError:
-        prefix = "/Users/pkorir/PycharmProjects/oil/world_availability/"
-    data = glob.glob(str(pathlib.Path(os.path.expanduser(path)) / "**"), recursive=True)
-    print(data)
-    tree = Tree.from_data(data, prefix=prefix)
-    print(tree.data)
-    print(json.dumps(tree.data, indent=4))
+    parser = argparse.ArgumentParser(prog='bandbox', description="Diagnose disorganised data file/folders")
+    parser.add_argument('path', default='.', help="path to diagnose [default: '.']")
+    parser.add_argument('-p', '--prefix', default='', help="prefix to exclude [default: '']")
+    parser.add_argument('-d', '--display-paths', default=False, action='store_true', help="display all the directories found [default: False]")
+    args = parser.parse_args()
+    data = glob.glob(str(pathlib.Path(os.path.expanduser(args.path)) / "**"), recursive=True)
+    tree = Tree.from_data(data, prefix=args.prefix)
+    if args.display_paths:
+        print(data)
+        print(tree.data)
+        print(json.dumps(tree.data, indent=4))
     print(tree)
     return os.EX_OK
 
