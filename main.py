@@ -16,7 +16,7 @@ data = ['10003/', '10003/10003.xml', '10003/data', '10003/data/full_set', '10003
         '10003/data/full_set/raw00007.dat', '10003/data/full_set/raw00008.dat', '10003/data/full_set/raw00009.dat',
         '10003/data/full_set/raw00010.dat', '10003/data/full_set/raw00012.dat', '10003/data/full_set/raw00013.dat',
         '10003/data/full_set/raw00014.dat', '10003/data/full_set/raw00015.dat', '10003/data/full_set/raw00016.dat', ]
-FILE_CRE = re.compile(r"^.*\..*$", re.IGNORECASE)
+FILE_CRE = re.compile(r"^.*\.{1}.*$", re.IGNORECASE)
 
 
 class Tree(UserDict):
