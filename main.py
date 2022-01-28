@@ -12,13 +12,16 @@ import sys
 from collections import UserDict
 
 
-FILE_EXTENSIONS = "jpg,jpeg,mrc,mrcs,tif,tiff,dm4,txt,box,cfg,fixed,st,rec,map,bak,eer,bz2,gz,zip"
-FILE_CRE = re.compile(rf"^([^.]*\.[^.]*|.*\.({'|'.join(FILE_EXTENSIONS.split(','))}))$", re.IGNORECASE)
+
+FILE_EXTENSIONS = "jpg|jpeg|mrc|mrcs|tif|tiff|dm4|txt|box|cfg|fixed|st|rec|map|bak|eer|bz2|gz|zip|xml"
+FILE_CRE = re.compile(rf"^([^.]*\.[^.]*|.*\.({FILE_EXTENSIONS}))$", re.IGNORECASE)
+FILE_EXTENSION_CAPTURE_CRE = re.compile(rf".*\.(?P<ext>({FILE_EXTENSIONS}))$", re.IGNORECASE)
 
 
 class Tree(UserDict):
-    def __new__(cls, sep='/'):
+    def __new__(cls, sep='/', show_file_counts=True):
         cls.sep = sep
+        cls.show_file_counts = show_file_counts
         return super().__new__(cls)
 
     def insert(self, path: str, prefix: str):
@@ -43,6 +46,21 @@ class Tree(UserDict):
                 else:  # a directory
                     insertion_point = insertion_point[element]
 
+    @staticmethod
+    def file_counts(file_list):
+        file_counts = dict()
+        for file_ in file_list:
+            file_match = FILE_EXTENSION_CAPTURE_CRE.match(file_)
+            if file_match:
+                ext = file_match.group('ext')
+                if ext not in file_counts:
+                    file_counts[ext] = 1
+                else:
+                    file_counts[ext] += 1
+            else:
+                print(f"warning: file '{file_}' did not match any extension", file=sys.stderr)
+        return file_counts
+
     def _recursive_string(self, extraction_point, indent=""):
         string = ""
         for key, value in extraction_point.items():
@@ -56,8 +74,15 @@ class Tree(UserDict):
                     item = "file"
                 else:
                     item = "files"
-                string += f"{indent}└── [{len(value)} {item}]\n"
-                # indent = indent[:-1]
+                if self.show_file_counts:
+                    file_counts_str = ""
+                    file_counts = self.file_counts(value)
+                    for ext, count in file_counts.items():
+                        file_counts_str += f"{ext}={count};"
+                    string += f"{indent}└── [{len(value)} {item}: {file_counts_str}]\n"
+                else:
+                    string += f"{indent}└── [{len(value)} {item}]\n"
+
         return string
 
     def __str__(self):
@@ -66,8 +91,9 @@ class Tree(UserDict):
         return string
 
     @classmethod
-    def from_data(cls, data, prefix=""):
+    def from_data(cls, data, prefix="", show_file_counts=True):
         tree = cls()
+        tree.show_file_counts = show_file_counts
         for t in data:
             tree.insert(t, prefix=prefix)
         return tree
@@ -79,13 +105,14 @@ def main():
     parser.add_argument('-p', '--prefix', default='', help="prefix to exclude [default: '']")
     parser.add_argument('-d', '--display-paths', default=False, action='store_true', help="display all the directories found [default: False]")
     parser.add_argument('-i', '--input-data', help="input data from a file")
+    parser.add_argument('--hide-file-counts', default=True, action='store_false', help="display file counts [default: True]")
     args = parser.parse_args()
     if args.input_data:
         with open(args.input_data) as f:
             data = f.read().strip().split(', ')
     else:
         data = glob.glob(str(pathlib.Path(os.path.expanduser(args.path)) / "**"), recursive=True)
-    tree = Tree.from_data(data, prefix=args.prefix)
+    tree = Tree.from_data(data, prefix=args.prefix, show_file_counts=args.hide_file_counts)
     if args.display_paths:
         print(data)
         print(tree.data)
