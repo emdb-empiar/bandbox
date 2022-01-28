@@ -11,11 +11,28 @@ import re
 import sys
 from collections import UserDict
 
+import requests
 
-
-FILE_EXTENSIONS = "jpg|jpeg|mrc|mrcs|tif|tiff|dm4|txt|box|cfg|fixed|st|rec|map|bak|eer|bz2|gz|zip|xml"
+FILE_EXTENSIONS = "jpg|jpeg|mrc|mrcs"
 FILE_CRE = re.compile(rf"^([^.]*\.[^.]*|.*\.({FILE_EXTENSIONS}))$", re.IGNORECASE)
 FILE_EXTENSION_CAPTURE_CRE = re.compile(rf".*\.(?P<ext>({FILE_EXTENSIONS}))$", re.IGNORECASE)
+
+
+def get_gist_data():
+    """Read up to date data from the Github gist"""
+    response = requests.get(
+        "https://gist.githubusercontent.com/paulkorir/5b71f57f7a29391f130e53c24a2db3fb/raw/da9142bb59479c278d1291165f1b416cf22030f8/bandbox.json")
+    if response.ok:
+        print(f"info: successfully retrieved up-to-date data...", file=sys.stderr)
+        global FILE_EXTENSIONS
+        global FILE_CRE
+        global FILE_EXTENSION_CAPTURE_CRE
+        FILE_EXTENSIONS = response.json()['file_formats']
+        FILE_CRE = re.compile(rf"^([^.]*\.[^.]*|.*\.({FILE_EXTENSIONS}))$", re.IGNORECASE)
+        FILE_EXTENSION_CAPTURE_CRE = re.compile(rf".*\.(?P<ext>({FILE_EXTENSIONS}))$", re.IGNORECASE)
+    else:
+        print(f"warning: unable to retrieve up-to-date data...", file=sys.stderr)
+        print(f"warning: falling back to local data", file=sys.stderr)
 
 
 class Tree(UserDict):
@@ -103,10 +120,13 @@ def main():
     parser = argparse.ArgumentParser(prog='bandbox', description="Diagnose disorganised data file/folders")
     parser.add_argument('path', default='.', help="path to diagnose [default: '.']")
     parser.add_argument('-p', '--prefix', default='', help="prefix to exclude [default: '']")
-    parser.add_argument('-d', '--display-paths', default=False, action='store_true', help="display all the directories found [default: False]")
+    parser.add_argument('-d', '--display-paths', default=False, action='store_true',
+                        help="display all the directories found [default: False]")
     parser.add_argument('-i', '--input-data', help="input data from a file")
-    parser.add_argument('--hide-file-counts', default=True, action='store_false', help="display file counts [default: True]")
+    parser.add_argument('--hide-file-counts', default=True, action='store_false',
+                        help="display file counts [default: True]")
     args = parser.parse_args()
+    get_gist_data()
     if args.input_data:
         with open(args.input_data) as f:
             data = f.read().strip().split(', ')
