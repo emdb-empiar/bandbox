@@ -21,7 +21,7 @@ FILE_EXTENSION_CAPTURE_CRE = re.compile(rf".*\.(?P<ext>({FILE_EXTENSIONS}))$", r
 def get_gist_data():
     """Read up to date data from the Github gist"""
     response = requests.get(
-        "https://gist.githubusercontent.com/paulkorir/5b71f57f7a29391f130e53c24a2db3fb/raw/da9142bb59479c278d1291165f1b416cf22030f8/bandbox.json")
+        "https://gist.githubusercontent.com/paulkorir/5b71f57f7a29391f130e53c24a2db3fb/raw/bandbox.json")
     if response.ok:
         print(f"info: successfully retrieved up-to-date data...", file=sys.stderr)
         global FILE_EXTENSIONS
