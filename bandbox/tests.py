@@ -96,38 +96,6 @@ class TestCore(Tests):
             [tree.insert(dir_entry, prefix=str(TEST_DATA)) for dir_entry in dir_entries]
             self.assertCountEqual(data, tree.data)
 
-    def test_tree_insert_folder_with_one_file(self):
-        tree = core.Tree()
-        paths = ['folder', 'folder/file.txt']
-        [tree.insert(path) for path in paths]
-        self.assertEqual(
-            {
-                'folder': {
-                    'files': ['file.txt']
-                }
-            },
-            tree.data
-        )
-
-    def test_tree_insert_folder_with_one_folder(self):
-        tree = core.Tree()
-        paths = ['folder', 'folder/inner_folder']
-        [tree.insert(path) for path in paths]
-        print(tree.data)
-        self.assertEqual(
-            {
-                'folder': {
-                    'inner_folder': {}
-                }
-            },
-            tree.data
-        )
-
-    def test_paths_must_be_folder(self):
-        """Fail on file"""
-        tree = core.Tree()
-        paths = ['file.txt']
-
 
 class TestAnalyse(Tests):
     def test_analyse_all_engines(self):

@@ -2,7 +2,7 @@ import os
 import sys
 from collections import UserDict
 
-from bandbox.utils import FILE_CRE, FILE_EXTENSION_CAPTURE_CRE
+from bandbox.utils import FILE_EXTENSION_CAPTURE_CRE
 
 
 class Tree(UserDict):
