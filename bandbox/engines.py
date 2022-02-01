@@ -32,14 +32,18 @@ quick wins
 async def s2_detect_redundant_directory(tree, args):
     """Detect the presence of redundant directories"""
 
+
 async def s2_detect_obvious_folders(tree, args):
     """Detect obvious folders"""
+
 
 async def s2_detect_system_information(tree, args):
     """Detect system information"""
 
+
 async def s2_detect_excessive_files_per_directory(tree, args):
     """Detect excessive files per directory"""
+
 
 # async def _detect_(tree, args):
 #     """Detect"""

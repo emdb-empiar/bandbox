@@ -4,6 +4,7 @@ import random
 import sys
 
 from bandbox.core import Tree
+from bandbox import utils
 
 
 async def _analyse_engines(args):
@@ -32,10 +33,9 @@ def view(args):
         with open(args.input_file) as f:
             data = f.read().strip().split(', ')
     else:
-        data = glob.glob(str(pathlib.Path(os.path.expanduser(args.path)) / "**"), recursive=True)
-    tree = Tree.from_data(data, prefix=args.prefix, show_file_counts=args.hide_file_counts)
+        data = utils.scandir_recursive(args.path)
+    tree = Tree.from_data(data, prefix=str(args.path.parent), show_file_counts=args.hide_file_counts)
     if args.verbose:
-        print(data, file=sys.stderr)
         print(tree.data, file=sys.stderr)
         print(json.dumps(tree.data, indent=4), file=sys.stderr)
     try:

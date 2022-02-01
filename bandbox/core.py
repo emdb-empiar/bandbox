@@ -1,3 +1,4 @@
+import os
 import sys
 from collections import UserDict
 
@@ -10,27 +11,24 @@ class Tree(UserDict):
         cls.show_file_counts = show_file_counts
         return super().__new__(cls)
 
-    def insert(self, path: str, prefix: str=''):
-        path_list = path.lstrip(prefix).strip(self.sep).split(self.sep)
+    def insert(self, dir_entry: os.DirEntry, prefix: str = ''):
+        path_list = dir_entry.path.removeprefix(prefix).strip(self.sep).split(self.sep)
+        # first, deal with folders
         insertion_point = self.data
-        for element in path_list:
+        for element in path_list[:-1]:
             if element not in insertion_point:
-                if FILE_CRE.match(element):  # a file
-                    if 'files' not in insertion_point:
-                        insertion_point['files'] = [element]
-                    else:
-                        insertion_point['files'] += [element]
-                else:
-                    insertion_point[element] = dict()
-                    insertion_point = insertion_point[element]
+                insertion_point[element] = dict()
+                insertion_point = insertion_point[element]
             else:
-                if FILE_CRE.match(element):  # a file
-                    if 'files' not in insertion_point:
-                        insertion_point['files'] = [element]
-                    else:
-                        insertion_point['files'] += [element]
-                else:  # a directory
-                    insertion_point = insertion_point[element]
+                insertion_point = insertion_point[element]
+        # last item
+        if dir_entry.is_file():
+            if 'files' not in insertion_point:
+                insertion_point['files'] = [path_list[-1]]
+            else:
+                insertion_point['files'] += [path_list[-1]]
+        else:
+            insertion_point[path_list[-1]] = dict()
 
     @staticmethod
     def file_counts(file_list):

@@ -12,14 +12,16 @@ output:
 - analyses
 - save tree
 """
-import glob
-import os
 import pathlib
+import types
 import unittest
 
 import requests
 
-from bandbox import cli, core
+from bandbox import cli, core, utils
+
+BASE_DIR = pathlib.Path("/Users/pkorir/PycharmProjects/bandbox")
+TEST_DATA = BASE_DIR / "test_data"
 
 
 class Tests(unittest.TestCase):
@@ -68,28 +70,31 @@ class TestCore(Tests):
         self.assertTrue(hasattr(tree, 'sep'))
         self.assertTrue(hasattr(tree, 'show_file_counts'))
 
-    def test_tree_insert_empty_dir(self):
-        """Inserting paths into the tree"""
-        tree = core.Tree()
-        # path is single folder only
-        dir_entries = glob.glob('/Users/pkorir/PycharmProjects/bandbox/test_data/empty_folder/**', recursive=True)
-        [tree.insert(dir_entry) for dir_entry in dir_entries]
-        # paths = [
-        #     'folder',
-        #     'folder/inner_folder1',
-        #     'folder/inner_folder2',
-        #     'folder/inner_folder1/file1.txt',
-        #     'folder/inner_folder1/file2.txt',
-        #     'folder/inner_folder1/file3.jpeg',
-        #     'folder/inner_folder2/file1.txt',
-        #     'folder/inner_folder2/file2.txt',
-        #     'folder/inner_folder2/file3.jpeg',
-        #     'folder/inner_folder2/inner_inner_folder',
-        # ]
-        # [tree.insert(path) for path in paths]
-        # print(tree)
-        print(tree.data)
-        self.assertEqual({'Users': {'pkorir': {'PycharmProjects': {'bandbox': {'test_data': {'empty_folder': {'folder': {}}}}}}}}, tree.data)
+    def test_tree_insert(self):
+        """Test inserting paths into the tree"""
+        expected_output = dict(
+            empty_folder={'empty_folder': {'folder': {}}},
+            folder_with_multiple_file_types={
+                'folder_with_multiple_file_types': {
+                    'folder': {
+                        'files': [f"file{i}.tif" for i in range(1, 11)] + [f"file{j}.txt" for j in range(1, 11)]}}
+            },
+            folder_with_multiple_files={
+                'folder_with_multiple_files': {'folder': {'files': [f"file{j}.txt" for j in range(1, 11)]}}
+            },
+            folder_with_multiple_folders={
+                'folder_with_multiple_folders': {
+                    f"folder{i}": [f"file{j}.tif" for j in range(1, 11)] for i in range(1, 6)
+                }
+            },
+            folder_with_single_file={'folder_with_single_file': {'folder': {'files': ['file.txt']}}},
+            single_empty_folder={'single_empty_folder': {'folder': {}}},
+        )
+        for data_name, data in expected_output.items():
+            tree = core.Tree()
+            dir_entries = utils.scandir_recursive(TEST_DATA / data_name)
+            [tree.insert(dir_entry, prefix=str(TEST_DATA)) for dir_entry in dir_entries]
+            self.assertCountEqual(data, tree.data)
 
     def test_tree_insert_folder_with_one_file(self):
         tree = core.Tree()
@@ -127,3 +132,21 @@ class TestCore(Tests):
 class TestAnalyse(Tests):
     def test_analyse_all_engines(self):
         """Run all engines"""
+
+
+class TestUtils(Tests):
+    def test_scandir_recursive(self):
+        """Test that we can recursively scan a directory"""
+        base_dir = TEST_DATA / "folder_with_single_file"
+        path_generator = utils.scandir_recursive(base_dir)
+        self.assertIsInstance(path_generator, types.GeneratorType)
+        for dir_entry in path_generator:
+            print(dir_entry, dir_entry.path)
+
+    def test_scandir_recursive_filtering(self):
+        """Test that we can exclude certain files"""
+        test_dir = TEST_DATA / "folder_with_multiple_file_types"
+        exclusion_list = ['*.txt']
+        dir_entries = list(utils.scandir_recursive(test_dir, exclude=exclusion_list))
+        print(dir_entries)
+        self.assertTrue(False)
