@@ -50,6 +50,15 @@ async def s2_detect_redundant_directory(tree, lock, args):
 
 async def s2_detect_obvious_folders(tree, lock, args):
     """Detect obvious folders"""
+    obvious_folders = tree.find_obvious_folders(include_root=args.include_root)
+    with lock:
+        print(f"S2 - obvious directory names...", end=" ")
+        if obvious_folders:
+            print(f"fail [{len(obvious_folders)} directories]")
+            for folder in obvious_folders:
+                print(f"  * {folder}")
+        else:
+            print(f"ok")
 
 
 async def s2_detect_system_information(tree, lock, args):

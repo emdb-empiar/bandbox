@@ -2,7 +2,7 @@ import os
 import sys
 from collections import UserDict
 
-from bandbox.utils import FILE_EXTENSION_CAPTURE_CRE
+import bandbox
 
 
 class Tree(UserDict):
@@ -23,10 +23,10 @@ class Tree(UserDict):
                 insertion_point = insertion_point[element]
         # last item
         if dir_entry.is_file():
-            if 'files' not in insertion_point:
-                insertion_point['files'] = [path_list[-1]]
+            if '_files' not in insertion_point:
+                insertion_point['_files'] = [path_list[-1]]
             else:
-                insertion_point['files'] += [path_list[-1]]
+                insertion_point['_files'] += [path_list[-1]]
         else:
             insertion_point[path_list[-1]] = dict()
 
@@ -34,7 +34,7 @@ class Tree(UserDict):
     def file_counts(file_list):
         file_counts = dict()
         for file_ in file_list:
-            file_match = FILE_EXTENSION_CAPTURE_CRE.match(file_)
+            file_match = bandbox.FILE_EXTENSION_CAPTURE_CRE.match(file_)
             if file_match:
                 ext = file_match.group('ext')
                 if ext not in file_counts:
@@ -86,14 +86,24 @@ class Tree(UserDict):
     def get_empty_dirs(tree_dict):
         empty_dirs = list()
         for dir_entry, children in tree_dict.items():
-            if len(children) == 0: # terminal empty folder
+            if len(children) == 0:  # terminal empty folder
                 empty_dirs.append(dir_entry)
-            if len(children) == 1: # non-terminal folder with files only
-                if "files" not in children and not isinstance(children, list):
+            if len(children) == 1:  # non-terminal folder with files only
+                if "_files" not in children and not isinstance(children, list):
                     empty_dirs.append(dir_entry)
             if isinstance(children, (dict, Tree)):
                 empty_dirs += Tree.get_empty_dirs(children)
         return empty_dirs
+
+    @staticmethod
+    def get_obvious_folders(tree_dict):
+        obvious = list()
+        for dir_entry, children in tree_dict.items():
+            if bandbox.OBVIOUS_FILES_CRE.match(dir_entry):
+                obvious.append(dir_entry)
+            if isinstance(children, (dict, Tree)):
+                obvious += Tree.get_obvious_folders(children)
+        return obvious
 
     def find_empty_directories(self, include_root=True) -> list:
         """Identify directories with no files"""
@@ -101,3 +111,9 @@ class Tree(UserDict):
         if include_root:
             return empty_dirs
         return empty_dirs[1:]
+
+    def find_obvious_folders(self, include_root=True) -> list:
+        obvious_dirs = Tree.get_obvious_folders(self)
+        if include_root:
+            return obvious_dirs
+        return obvious_dirs[1:]

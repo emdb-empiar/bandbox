@@ -18,7 +18,7 @@ import unittest
 
 import requests
 
-from bandbox import cli, core, utils
+from bandbox import cli, core, utils, managers
 
 BASE_DIR = pathlib.Path("/Users/pkorir/PycharmProjects/bandbox")
 TEST_DATA = BASE_DIR / "test_data"
@@ -112,13 +112,24 @@ class TestCore(Tests):
         self.assertEqual([], tree.find_empty_directories(include_root=False))
         dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_file_types")
         tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertEqual(['folder_with_multiple_file_types', 'inner_folder'], tree.find_empty_directories())
-        self.assertEqual(['inner_folder'], tree.find_empty_directories(include_root=False))
+        self.assertEqual(['folder_with_multiple_file_types', 'files', 'inner_folder'], tree.find_empty_directories())
+        self.assertEqual(['files', 'inner_folder'], tree.find_empty_directories(include_root=False))
+
+    def test_find_obvious_folders(self):
+        """Test that we can detect obvious names"""
+        dir_entries = utils.scandir_recursive(TEST_DATA / "single_empty_folder")
+        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
+        self.assertEqual(['folder'], tree.find_obvious_folders())
+        dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_file_types")
+        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
+        self.assertEqual(['folder', 'files'], tree.find_obvious_folders())
 
 
 class TestAnalyse(Tests):
     def test_analyse_all_engines(self):
         """Run all engines"""
+        args = cli.cli(f"bandbox analyse {TEST_DATA / 'empty_folder'}")
+        managers.analyse(args)
 
 
 class TestUtils(Tests):

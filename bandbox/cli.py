@@ -21,13 +21,6 @@ def _add_arg(parser_: argparse.ArgumentParser, option: dict):
 
 
 parser = argparse.ArgumentParser(prog='bandbox', description="Diagnose disorganised data file/folders")
-# parser.add_argument('path', default='.', help="path to diagnose [default: '.']")
-# parser.add_argument('-p', '--prefix', default='', help="prefix to exclude [default: '']")
-# parser.add_argument('-d', '--display-paths', default=False, action='store_true',
-#                     help="display all the directories found [default: False]")
-# parser.add_argument('-i', '--input-data', help="input data from a file")
-# parser.add_argument('--hide-file-counts', default=True, action='store_false',
-#                     help="display file counts [default: True]")
 
 subparsers = parser.add_subparsers(dest='command', title='Commands available')
 
@@ -38,7 +31,8 @@ analyse_parser = subparsers.add_parser(
     help='analyse the data tree',
 )
 _add_arg(analyse_parser, path)
-analyse_parser.add_argument('--include-root', default=False, action='store_true', help="include the root directory for analysis [default: False]")
+analyse_parser.add_argument('--include-root', default=False, action='store_true',
+                            help="include the root directory for analysis [default: False]")
 
 # view
 view_parser = subparsers.add_parser(
