@@ -115,3 +115,18 @@ class Tree(UserDict):
     def find_obvious_folders(self, include_root=True) -> list:
         obvious_dirs = Tree.get_obvious_folders(self)
         return obvious_dirs
+
+    @staticmethod
+    def get_excessive_files(tree_dict, parent=""):
+        excess = list()
+        for dir_entry, children in tree_dict.items():
+            if '_files' in tree_dict:
+                if len(tree_dict['_files']) > bandbox.MAX_FILES:
+                    excess.append(f"{parent}{dir_entry}")
+            if isinstance(children, (dict, Tree)):
+                excess += Tree.get_excessive_files(children, parent=f"{parent}{dir_entry}/")
+        return excess
+
+    def find_excessive_files_per_directory(self) -> list:
+        excess = Tree.get_excessive_files(self)
+        return excess

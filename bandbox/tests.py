@@ -132,6 +132,12 @@ class TestCore(Tests):
         self.assertEqual(['folder_with_multiple_file_types/folder', 'folder_with_multiple_file_types/folder/files',
                           'folder_with_multiple_file_types/folder/inner_folder'], tree.find_obvious_folders())
 
+    def test_find_excessive_files_per_directory(self):
+        """Test detection of excessive files"""
+        dir_entries = utils.scandir_recursive(TEST_DATA / "single_empty_folder")
+        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
+        print(tree.find_excessive_files_per_directory())
+
 
 class TestAnalyse(Tests):
     def test_analyse_all_engines(self):

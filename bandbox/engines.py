@@ -27,6 +27,7 @@ quick wins
 - detect symbolic links
 - detect broken symbolic links
 """
+import bandbox
 
 
 async def s2_detect_redundant_directory(tree, lock, args):
@@ -67,7 +68,15 @@ async def s2_detect_system_information(tree, lock, args):
 
 async def s2_detect_excessive_files_per_directory(tree, lock, args):
     """Detect excessive files per directory"""
-
+    excess_files = tree.find_excessive_files_per_directory()
+    with lock:
+        print(f"S2 - excessives (>{bandbox.MAX_FILES}) files per directory...", end=" ")
+        if excess_files:
+            print(f"fail [{len(excess_files)} directories]")
+            for folder in excess_files:
+                print(f"  * {folder}")
+        else:
+            print(f"ok")
 
 # async def _detect_(tree, args):
 #     """Detect"""
