@@ -6,7 +6,7 @@ import requests
 FILE_EXTENSIONS = "jpg|jpeg|mrc|mrcs"
 FILE_CRE = re.compile(rf"^([^.]*\.[^.]*|.*\.({FILE_EXTENSIONS}))$", re.IGNORECASE)
 FILE_EXTENSION_CAPTURE_CRE = re.compile(rf".*\.(?P<ext>({FILE_EXTENSIONS}))$", re.IGNORECASE)
-OBVIOUS_FILES = "file|files|data|folder"
+OBVIOUS_FILES = "file|files|data|folder|inner_folder"
 OBVIOUS_FILES_CRE = re.compile(rf"^({OBVIOUS_FILES})$", re.IGNORECASE)
 
 

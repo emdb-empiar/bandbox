@@ -83,27 +83,17 @@ class Tree(UserDict):
         return tree
 
     @staticmethod
-    def get_empty_dirs(tree_dict):
+    def get_empty_dirs(tree_dict, parent=""):
         empty_dirs = list()
         for dir_entry, children in tree_dict.items():
             if len(children) == 0:  # terminal empty folder
-                empty_dirs.append(dir_entry)
+                empty_dirs.append(f"{parent}{dir_entry}")
             if len(children) == 1:  # non-terminal folder with files only
                 if "_files" not in children and not isinstance(children, list):
-                    empty_dirs.append(dir_entry)
+                    empty_dirs.append(f"{parent}{dir_entry}")
             if isinstance(children, (dict, Tree)):
-                empty_dirs += Tree.get_empty_dirs(children)
+                empty_dirs += Tree.get_empty_dirs(children, parent=f"{parent}{dir_entry}/")
         return empty_dirs
-
-    @staticmethod
-    def get_obvious_folders(tree_dict):
-        obvious = list()
-        for dir_entry, children in tree_dict.items():
-            if bandbox.OBVIOUS_FILES_CRE.match(dir_entry):
-                obvious.append(dir_entry)
-            if isinstance(children, (dict, Tree)):
-                obvious += Tree.get_obvious_folders(children)
-        return obvious
 
     def find_empty_directories(self, include_root=True) -> list:
         """Identify directories with no files"""
@@ -112,8 +102,16 @@ class Tree(UserDict):
             return empty_dirs
         return empty_dirs[1:]
 
+    @staticmethod
+    def get_obvious_folders(tree_dict, parent=""):
+        obvious = list()
+        for dir_entry, children in tree_dict.items():
+            if bandbox.OBVIOUS_FILES_CRE.match(dir_entry):
+                obvious.append(f"{parent}{dir_entry}")
+            if isinstance(children, (dict, Tree)):
+                obvious += Tree.get_obvious_folders(children, parent=f"{parent}{dir_entry}/")
+        return obvious
+
     def find_obvious_folders(self, include_root=True) -> list:
         obvious_dirs = Tree.get_obvious_folders(self)
-        if include_root:
-            return obvious_dirs
-        return obvious_dirs[1:]
+        return obvious_dirs

@@ -100,29 +100,37 @@ class TestCore(Tests):
         """Test that we can find empty directories"""
         dir_entries = utils.scandir_recursive(TEST_DATA / "single_empty_folder")
         tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertEqual(['single_empty_folder', 'folder', 'inner_folder'], tree.find_empty_directories())
-        self.assertEqual(['folder', 'inner_folder'], tree.find_empty_directories(include_root=False))
+        self.assertEqual(
+            ['single_empty_folder', 'single_empty_folder/folder', 'single_empty_folder/folder/inner_folder'],
+            tree.find_empty_directories())
+        self.assertEqual(['single_empty_folder/folder', 'single_empty_folder/folder/inner_folder'],
+                         tree.find_empty_directories(include_root=False))
         dir_entries = utils.scandir_recursive(TEST_DATA / "empty_folder")
         tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertEqual(['empty_folder', 'folder'], tree.find_empty_directories())
-        self.assertEqual(['folder'], tree.find_empty_directories(include_root=False))
+        self.assertEqual(['empty_folder', 'empty_folder/folder'], tree.find_empty_directories())
+        self.assertEqual(['empty_folder/folder'], tree.find_empty_directories(include_root=False))
         dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_folders")
         tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
         self.assertEqual([], tree.find_empty_directories())
         self.assertEqual([], tree.find_empty_directories(include_root=False))
         dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_file_types")
         tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertEqual(['folder_with_multiple_file_types', 'files', 'inner_folder'], tree.find_empty_directories())
-        self.assertEqual(['files', 'inner_folder'], tree.find_empty_directories(include_root=False))
+        self.assertEqual(['folder_with_multiple_file_types', 'folder_with_multiple_file_types/folder/files',
+                          'folder_with_multiple_file_types/folder/inner_folder'], tree.find_empty_directories())
+        self.assertEqual(
+            ['folder_with_multiple_file_types/folder/files', 'folder_with_multiple_file_types/folder/inner_folder'],
+            tree.find_empty_directories(include_root=False))
 
     def test_find_obvious_folders(self):
         """Test that we can detect obvious names"""
         dir_entries = utils.scandir_recursive(TEST_DATA / "single_empty_folder")
         tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertEqual(['folder'], tree.find_obvious_folders())
+        self.assertEqual(['single_empty_folder/folder', 'single_empty_folder/folder/inner_folder'],
+                         tree.find_obvious_folders())
         dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_file_types")
         tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertEqual(['folder', 'files'], tree.find_obvious_folders())
+        self.assertEqual(['folder_with_multiple_file_types/folder', 'folder_with_multiple_file_types/folder/files',
+                          'folder_with_multiple_file_types/folder/inner_folder'], tree.find_obvious_folders())
 
 
 class TestAnalyse(Tests):
