@@ -81,3 +81,23 @@ class Tree(UserDict):
         for t in data:
             tree.insert(t, prefix=prefix)
         return tree
+
+    @staticmethod
+    def get_empty_dirs(tree_dict):
+        empty_dirs = list()
+        for dir_entry, children in tree_dict.items():
+            if len(children) == 0: # terminal empty folder
+                empty_dirs.append(dir_entry)
+            if len(children) == 1: # non-terminal folder with files only
+                if "files" not in children and not isinstance(children, list):
+                    empty_dirs.append(dir_entry)
+            if isinstance(children, (dict, Tree)):
+                empty_dirs += Tree.get_empty_dirs(children)
+        return empty_dirs
+
+    def find_empty_directories(self, include_root=True) -> list:
+        """Identify directories with no files"""
+        empty_dirs = Tree.get_empty_dirs(self)
+        if include_root:
+            return empty_dirs
+        return empty_dirs[1:]

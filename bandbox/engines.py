@@ -29,30 +29,45 @@ quick wins
 """
 
 
-async def s2_detect_redundant_directory(tree, args):
-    """Detect the presence of redundant directories"""
+async def s2_detect_redundant_directory(tree, lock, args):
+    """Detect the presence of redundant directories
+
+    A directory is redundant if:
+    - it is empty
+    - it is non-empty but is the only child of a parent folder
+    """
+    # empty folders
+    empty_folders = tree.find_empty_directories(include_root=args.include_root)
+    with lock:
+        print(f"S2 - redundant directories...", end=" ")
+        if empty_folders:
+            print(f"fail [{len(empty_folders)} directories]")
+            for folder in empty_folders:
+                print(f"  * {folder}")
+        else:
+            print(f"ok")
 
 
-async def s2_detect_obvious_folders(tree, args):
+async def s2_detect_obvious_folders(tree, lock, args):
     """Detect obvious folders"""
 
 
-async def s2_detect_system_information(tree, args):
+async def s2_detect_system_information(tree, lock, args):
     """Detect system information"""
 
 
-async def s2_detect_excessive_files_per_directory(tree, args):
+async def s2_detect_excessive_files_per_directory(tree, lock, args):
     """Detect excessive files per directory"""
 
 
 # async def _detect_(tree, args):
 #     """Detect"""
 
-async def n2_detect_long_names(tree, args):
+async def n2_detect_long_names(tree, lock, args):
     """Detect entities with very long names"""
-    print(f"info: working on {tree} with {args}...")
+    # print(f"info: working on {tree} with {args}...")
 
 
-async def s2_detect_redundant_dirs(tree, args):
+async def s2_detect_redundant_dirs(tree, lock, args):
     """Detect redundant directories"""
-    print(f"info: working on {tree} with {args}...")
+    # print(f"info: working on {tree} with {args}...")

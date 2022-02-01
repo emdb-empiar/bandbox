@@ -57,6 +57,7 @@ class TestCLI(Tests):
         args = cli.cli(f"bandbox analyse")
         self.assertEqual('analyse', args.command)
         self.assertEqual(pathlib.Path('.'), args.path)
+        self.assertFalse(args.include_root)
 
 
 class TestCore(Tests):
@@ -91,10 +92,28 @@ class TestCore(Tests):
             single_empty_folder={'single_empty_folder': {'folder': {}}},
         )
         for data_name, data in expected_output.items():
-            tree = core.Tree()
             dir_entries = utils.scandir_recursive(TEST_DATA / data_name)
-            [tree.insert(dir_entry, prefix=str(TEST_DATA)) for dir_entry in dir_entries]
+            tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
             self.assertCountEqual(data, tree.data)
+
+    def test_find_empty_directories(self):
+        """Test that we can find empty directories"""
+        dir_entries = utils.scandir_recursive(TEST_DATA / "single_empty_folder")
+        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
+        self.assertEqual(['single_empty_folder', 'folder', 'inner_folder'], tree.find_empty_directories())
+        self.assertEqual(['folder', 'inner_folder'], tree.find_empty_directories(include_root=False))
+        dir_entries = utils.scandir_recursive(TEST_DATA / "empty_folder")
+        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
+        self.assertEqual(['empty_folder', 'folder'], tree.find_empty_directories())
+        self.assertEqual(['folder'], tree.find_empty_directories(include_root=False))
+        dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_folders")
+        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
+        self.assertEqual([], tree.find_empty_directories())
+        self.assertEqual([], tree.find_empty_directories(include_root=False))
+        dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_file_types")
+        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
+        self.assertEqual(['folder_with_multiple_file_types', 'inner_folder'], tree.find_empty_directories())
+        self.assertEqual(['inner_folder'], tree.find_empty_directories(include_root=False))
 
 
 class TestAnalyse(Tests):

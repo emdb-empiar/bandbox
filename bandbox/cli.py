@@ -38,6 +38,7 @@ analyse_parser = subparsers.add_parser(
     help='analyse the data tree',
 )
 _add_arg(analyse_parser, path)
+analyse_parser.add_argument('--include-root', default=False, action='store_true', help="include the root directory for analysis [default: False]")
 
 # view
 view_parser = subparsers.add_parser(

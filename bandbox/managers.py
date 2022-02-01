@@ -5,16 +5,17 @@ import sys
 
 from bandbox.core import Tree
 from bandbox import utils
+from threading import Lock
 
 
-async def _analyse_engines(args):
+async def _analyse_engines(tree, lock, args):
     """Run engines concurrently"""
     from bandbox import engines
     import inspect
     engines_ = inspect.getmembers(engines, inspect.isfunction)
     awaitables = list()
     for engine_name, engine in engines_:
-        awaitables.append(engine(random.random(), args))
+        awaitables.append(engine(tree, lock, args))
     await asyncio.gather(*awaitables)
 
 
@@ -23,7 +24,10 @@ def analyse(args):
     # decide which engines we will include
     # e.g. n2_long_names -> list of entities with long names
     # entry point
-    asyncio.run(_analyse_engines(args))
+    lock = Lock()
+    dir_entries = utils.scandir_recursive(args.path)
+    tree = Tree.from_data(dir_entries, prefix=str(args.path.parent))
+    asyncio.run(_analyse_engines(tree, lock, args))
 
 
 def view(args):
@@ -44,5 +48,4 @@ def view(args):
         pass
 
 
-if __name__ == "__main__":
-    analyse('test')
+
