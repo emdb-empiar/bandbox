@@ -12,6 +12,7 @@ output:
 - analyses
 - save tree
 """
+import glob
 import os
 import pathlib
 import unittest
@@ -67,24 +68,11 @@ class TestCore(Tests):
         self.assertTrue(hasattr(tree, 'sep'))
         self.assertTrue(hasattr(tree, 'show_file_counts'))
 
-    def test_get_path(self):
-        tree = core.Tree()
-        tree.data = {'a': {'b': {'c': 'd'}}}
-        self.assertEqual('d', tree.get_path('a/b/c'))
-        print(tree)
-
-    def test_set_path(self):
-        tree = core.Tree()
-        tree.set_path('a/b/c/d')
-        print(tree.data)
-        self.assertEqual({'a': {'b': {'c': 'd'}}}, tree.data)
-        self.assertEqual('d', tree.get_path('a/b/c'))
-
     def test_tree_insert_empty_dir(self):
         """Inserting paths into the tree"""
         tree = core.Tree()
         # path is single folder only
-        dir_entries = os.scandir('/Users/pkorir/PycharmProjects/bandbox/test_data/empty_folder')
+        dir_entries = glob.glob('/Users/pkorir/PycharmProjects/bandbox/test_data/empty_folder/**', recursive=True)
         [tree.insert(dir_entry) for dir_entry in dir_entries]
         # paths = [
         #     'folder',
@@ -101,24 +89,16 @@ class TestCore(Tests):
         # [tree.insert(path) for path in paths]
         # print(tree)
         print(tree.data)
-        self.assertEqual({'root': {'type': 'directory', 'name': 'folder', 'contents': []}}, tree.data)
+        self.assertEqual({'Users': {'pkorir': {'PycharmProjects': {'bandbox': {'test_data': {'empty_folder': {'folder': {}}}}}}}}, tree.data)
 
     def test_tree_insert_folder_with_one_file(self):
         tree = core.Tree()
         paths = ['folder', 'folder/file.txt']
         [tree.insert(path) for path in paths]
-        print(tree.data)
         self.assertEqual(
             {
-                'root': {
-                    'type': 'directory',
-                    'name': 'folder',
-                    'contents': [
-                        {
-                            'type': 'file',
-                            'name': 'file.txt'
-                        }
-                    ]
+                'folder': {
+                    'files': ['file.txt']
                 }
             },
             tree.data
@@ -131,16 +111,8 @@ class TestCore(Tests):
         print(tree.data)
         self.assertEqual(
             {
-                'root': {
-                    'type': 'directory',
-                    'name': 'folder',
-                    'contents': [
-                        {
-                            'type': 'directory',
-                            'name': 'inner_folder',
-                            'contents': []
-                        }
-                    ]
+                'folder': {
+                    'inner_folder': {}
                 }
             },
             tree.data

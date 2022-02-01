@@ -1,5 +1,7 @@
 import asyncio
+import json
 import random
+import sys
 
 from bandbox.core import Tree
 
@@ -26,16 +28,16 @@ def analyse(args):
 def view(args):
     """View the given dataset"""
     import glob, pathlib, os
-    if args.input_data:
-        with open(args.input_data) as f:
+    if args.input_file:
+        with open(args.input_file) as f:
             data = f.read().strip().split(', ')
     else:
         data = glob.glob(str(pathlib.Path(os.path.expanduser(args.path)) / "**"), recursive=True)
     tree = Tree.from_data(data, prefix=args.prefix, show_file_counts=args.hide_file_counts)
-    if args.display_paths:
-        print(data)
-        print(tree.data)
-        print(json.dumps(tree.data, indent=4))
+    if args.verbose:
+        print(data, file=sys.stderr)
+        print(tree.data, file=sys.stderr)
+        print(json.dumps(tree.data, indent=4), file=sys.stderr)
     try:
         print(tree)
     except BrokenPipeError:

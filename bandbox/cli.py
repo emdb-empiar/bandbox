@@ -47,8 +47,8 @@ view_parser = subparsers.add_parser(
 )
 _add_arg(view_parser, path)
 view_parser.add_argument('-p', '--prefix', default='', help="prefix to exclude [default: '']")
-view_parser.add_argument('-d', '--display-paths', default=False, action='store_true',
-                         help="display all the directories found [default: False]")
+view_parser.add_argument('-v', '--verbose', default=False, action='store_true',
+                         help="verbose output which will display all the directories found [default: False]")
 view_parser.add_argument('-f', '--input-file', help="input data from a file")
 view_parser.add_argument('--hide-file-counts', default=True, action='store_false',
                          help="display file counts [default: True]")
