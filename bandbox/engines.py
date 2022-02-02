@@ -27,7 +27,9 @@ quick wins
 - detect symbolic links
 - detect broken symbolic links
 """
+
 import bandbox
+from bandbox.utils import _report
 
 
 async def s2_detect_redundant_directory(tree, lock, args):
@@ -39,27 +41,13 @@ async def s2_detect_redundant_directory(tree, lock, args):
     """
     # empty folders
     empty_folders = tree.find_empty_directories(include_root=args.include_root)
-    with lock:
-        print(f"S2 - redundant directories...", end=" ")
-        if empty_folders:
-            print(f"fail [{len(empty_folders)} directories]")
-            for folder in empty_folders:
-                print(f"  * {folder}")
-        else:
-            print(f"ok")
+    await _report(empty_folders, lock, f"S2 - redundant directories...")
 
 
 async def s2_detect_obvious_folders(tree, lock, args):
     """Detect obvious folders"""
     obvious_folders = tree.find_obvious_folders(include_root=args.include_root)
-    with lock:
-        print(f"S2 - obvious directory names...", end=" ")
-        if obvious_folders:
-            print(f"fail [{len(obvious_folders)} directories]")
-            for folder in obvious_folders:
-                print(f"  * {folder}")
-        else:
-            print(f"ok")
+    await _report(obvious_folders, lock, f"S2 - obvious directory names...")
 
 
 async def s2_detect_system_information(tree, lock, args):
@@ -69,21 +57,18 @@ async def s2_detect_system_information(tree, lock, args):
 async def s2_detect_excessive_files_per_directory(tree, lock, args):
     """Detect excessive files per directory"""
     excess_files = tree.find_excessive_files_per_directory()
-    with lock:
-        print(f"S2 - excessives (>{bandbox.MAX_FILES}) files per directory...", end=" ")
-        if excess_files:
-            print(f"fail [{len(excess_files)} directories]")
-            for folder in excess_files:
-                print(f"  * {folder}")
-        else:
-            print(f"ok")
+    await _report(excess_files, lock, f"S2 - excessives (>{bandbox.MAX_FILES}) files per directory...")
+
 
 # async def _detect_(tree, args):
 #     """Detect"""
 
+
 async def n2_detect_long_names(tree, lock, args):
     """Detect entities with very long names"""
     # print(f"info: working on {tree} with {args}...")
+    dirs = tree.find_long_names()
+    await _report(dirs, lock, f"N2 - long names (>{bandbox.MAX_NAME_LENGTH} chars)...")
 
 
 async def s2_detect_redundant_dirs(tree, lock, args):

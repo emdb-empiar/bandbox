@@ -1,12 +1,22 @@
 import os
 import pathlib
-import re
-import sys
+import threading
 import typing
 
-import requests
 
-
+async def _report(dirs: list, lock: threading.Lock, rule_text: str, fail_text: str = '') -> None:
+    """Reporting function"""
+    with lock:
+        print(rule_text, end=" ")
+        if dirs:
+            if fail_text:
+                print(fail_text)
+            else:
+                print(f"fail [{len(dirs)} directories]")
+            for item in dirs:
+                print(f"  * {item}")
+        else:
+            print(f"ok")
 
 
 def scandir_recursive(path: typing.Union[str, pathlib.Path], recursive=True,

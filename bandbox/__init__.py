@@ -9,6 +9,7 @@ FILE_EXTENSION_CAPTURE_CRE = re.compile(rf".*\.(?P<ext>({FILE_EXTENSIONS}))$", r
 OBVIOUS_FILES = "file|files|data|folder|inner_folder"
 OBVIOUS_FILES_CRE = re.compile(rf"^({OBVIOUS_FILES})$", re.IGNORECASE)
 MAX_FILES = 5
+MAX_NAME_LENGTH = 20
 
 
 def get_gist_data():

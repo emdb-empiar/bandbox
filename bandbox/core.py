@@ -130,3 +130,17 @@ class Tree(UserDict):
     def find_excessive_files_per_directory(self) -> list:
         excess = Tree.get_excessive_files(self)
         return excess
+
+    @staticmethod
+    def get_long_names(tree_dict, parent=""):
+        long_names = list()
+        for dir_entry, children in tree_dict.items():
+            if len(dir_entry) > bandbox.MAX_NAME_LENGTH:
+                long_names.append(f"{parent}{dir_entry}")
+            if isinstance(children, (dict, Tree)):
+                long_names += Tree.get_long_names(children, parent=f"{parent}{dir_entry}/")
+        return long_names
+
+    def find_long_names(self) -> list:
+        long_names = Tree.get_long_names(self)
+        return long_names

@@ -137,6 +137,13 @@ class TestCore(Tests):
         dir_entries = utils.scandir_recursive(TEST_DATA / "single_empty_folder")
         tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
         print(tree.find_excessive_files_per_directory())
+        self.assertTrue(False)
+
+    def test_find_long_names(self):
+        """Test we can find long names"""
+        dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_long_name_folders")
+        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
+        print(tree.find_long_names())
 
 
 class TestAnalyse(Tests):

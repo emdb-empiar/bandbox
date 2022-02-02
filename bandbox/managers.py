@@ -15,6 +15,7 @@ async def _analyse_engines(tree, lock, args):
     engines_ = inspect.getmembers(engines, inspect.isfunction)
     awaitables = list()
     for engine_name, engine in engines_:
+        print(engine_name)
         awaitables.append(engine(tree, lock, args))
     await asyncio.gather(*awaitables)
 
