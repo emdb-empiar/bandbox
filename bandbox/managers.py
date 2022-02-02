@@ -26,6 +26,8 @@ def analyse(args):
     # entry point
     dir_entries = utils.scandir_recursive(args.path)
     tree = Tree.from_data(dir_entries, prefix=str(args.prefix))
+    if args.show_tree:
+        print(tree)
     if sys.version_info.minor > 6:  # 3.7+
         asyncio.run(_analyse_engines(tree, args))
     else:  # python 3.6

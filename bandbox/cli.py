@@ -42,6 +42,7 @@ _add_arg(analyse_parser, path)
 analyse_parser.add_argument('--include-root', default=False, action='store_true',
                             help="include the root directory for analysis [default: False]")
 _add_arg(analyse_parser, prefix)
+analyse_parser.add_argument('--show-tree', default=False, action='store_true', help="display the tree [default: False]")
 
 # view
 view_parser = subparsers.add_parser(
