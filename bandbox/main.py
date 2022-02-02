@@ -7,6 +7,8 @@ from bandbox.cli import parse_args
 
 def main():
     args = parse_args()
+    if args is None:
+        return os.EX_DATAERR
     if args.command == 'analyse':
         return managers.analyse(args)
     elif args.command == 'view':

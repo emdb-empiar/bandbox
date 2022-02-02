@@ -1,13 +1,10 @@
 import os
 import pathlib
-import threading
 import typing
+import sys
 
 
-
-
-
-def scandir_recursive(path: typing.Union[str, pathlib.Path], recursive=True,
+def scandir_recursive(path: pathlib.Path, recursive=True,
                       exclude: typing.Union[None, list] = None) -> typing.Generator:
     """Recursively scan a directory
 

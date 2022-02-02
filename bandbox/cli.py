@@ -52,6 +52,10 @@ view_parser.add_argument('--hide-file-counts', default=True, action='store_false
 def parse_args():
     """Parse CLI args"""
     args = parser.parse_args()
+    # the path must exist
+    if not args.path.exists():
+        print(f"error: invalid path '{args.path}'", file=sys.stderr)
+        return None
     return args
 
 

@@ -1,11 +1,10 @@
 """
-Engines perform analyses on the tree. They are all run asynchronously for performance.
+Engines perform analyses on the tree. They are all run concurrently for performance.
 
 quick wins
-- detect redundant dirs [S2.a]
-- detect obvious folders e.g tiff/*.tif* [S2.b]
-- detect system information [S2.c]
-- detect excessive files per directory [S2.c]
+- [DONE] detect redundant dirs [S2.a]
+- [DONE] detect obvious folders e.g tiff/*.tif* [S2.b]
+- [DONE] detect excessive files per directory [S2.c]
 - detect directories with mixed files [S3.a]
 - detect cryptic names (against a dictionary) [N1]
 - detect dates in names [N1.b]
@@ -28,15 +27,11 @@ quick wins
 - detect broken symbolic links
 """
 
-import threading
-
 import bandbox
 
 
 async def _report(dirs: list, rule_text: str, fail_text: str = '') -> None:
     """Reporting function"""
-    # lock = threading.Lock()
-    # with lock:
     print(rule_text, end=" ")
     if dirs:
         if fail_text:
@@ -67,8 +62,7 @@ async def s2_detect_obvious_folders(tree, args):
     await _report(obvious_folders, f"S2 - obvious directory names...")
 
 
-async def s2_detect_system_information(tree, args):
-    """Detect system information"""
+
 
 
 async def s2_detect_excessive_files_per_directory(tree, args):
@@ -76,6 +70,10 @@ async def s2_detect_excessive_files_per_directory(tree, args):
     excess_files = tree.find_excessive_files_per_directory()
     await _report(excess_files, f"S2 - excessives (>{bandbox.MAX_FILES}) files per directory...")
 
+async def s3_detect_directories_with_mixed_files(tree, args):
+    """Detect folders with mixed files"""
+    mixed_files = tree.find_directories_with_mixed_files()
+    await _report(mixed_files, f"S3 - directories with mixed files...")
 
 # async def _detect_(tree, args):
 #     """Detect"""
@@ -88,6 +86,4 @@ async def n2_detect_long_names(tree, args):
     await _report(dirs, f"N2 - long names (>{bandbox.MAX_NAME_LENGTH} chars)...")
 
 
-async def s2_detect_redundant_dirs(tree, args):
-    """Detect redundant directories"""
-    # print(f"info: working on {tree} with {args}...")
+

@@ -134,15 +134,17 @@ class TestCore(Tests):
 
     def test_find_excessive_files_per_directory(self):
         """Test detection of excessive files"""
-        dir_entries = utils.scandir_recursive(TEST_DATA / "single_empty_folder")
+        dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_folders")
         tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertEqual([], tree.find_excessive_files_per_directory())
+        self.assertCountEqual([f'folder_with_multiple_folders/folder{i}/' for i in range(1,6)], tree.find_excessive_files_per_directory())
 
     def test_find_long_names(self):
         """Test we can find long names"""
         dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_long_name_folders")
         tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
         print(tree.find_long_names())
+
+
 
 
 class TestAnalyse(Tests):

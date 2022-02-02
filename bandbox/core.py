@@ -122,7 +122,7 @@ class Tree(UserDict):
         for dir_entry, children in tree_dict.items():
             if '_files' in tree_dict:
                 if len(tree_dict['_files']) > bandbox.MAX_FILES:
-                    excess.append(f"{parent}{dir_entry}")
+                    excess.append(f"{parent}")
             if isinstance(children, (dict, Tree)):
                 excess += Tree.get_excessive_files(children, parent=f"{parent}{dir_entry}/")
         return excess
@@ -144,3 +144,20 @@ class Tree(UserDict):
     def find_long_names(self) -> list:
         long_names = Tree.get_long_names(self)
         return long_names
+
+    @staticmethod
+    def get_directories_with_mixed_files(tree_dict, parent=""):
+        mixed_dirs = list()
+        for dir_entry, children in tree_dict.items():
+            if '_files' in tree_dict:
+                files = Tree.file_counts(tree_dict['_files'])
+                print(files)
+                if len(files) > 1:
+                    mixed_dirs.append(f"{parent}{dir_entry}")
+            if isinstance(children, (dict, Tree)):
+                mixed_dirs += Tree.get_directories_with_mixed_files(children, parent=f"{parent}{dir_entry}/")
+        return mixed_dirs
+
+    def find_directories_with_mixed_files(self) -> list:
+        mixed_dirs = Tree.get_directories_with_mixed_files(self)
+        return mixed_dirs
