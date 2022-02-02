@@ -168,6 +168,26 @@ class TestCore(Tests):
             sorted(tree.find_directories_with_mixed_files())
         )
 
+    def test_find_with_date_names(self):
+        """Test that we can find dates in names"""
+        dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_date_name_files/")
+        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
+        self.assertListEqual(
+            sorted([
+                'folder_with_date_name_files/prefix-12312000-suffix.txt',
+                'folder_with_date_name_files/prefix-2000:12:31-suffix.txt',
+                'folder_with_date_name_files/prefix-31:December:2000-suffix.txt',
+                'folder_with_date_name_files/prefix-31122000-suffix.txt',
+                'folder_with_date_name_files/prefix-31-Dec-2000-suffix.txt',
+                'folder_with_date_name_files/prefix-Dec-31-2000-suffix.txt',
+                'folder_with_date_name_files/prefix-2000-12-31-suffix.txt',
+                'folder_with_date_name_files/prefix-20001231-suffix.txt',
+                'folder_with_date_name_files/prefix-001231-suffix.txt',
+                'folder_with_date_name_files/prefix-31-December-2000-suffix.txt'
+            ]),
+            sorted(tree.find_with_date_names())
+        )
+
 
 class TestAnalyse(Tests):
     def test_analyse_all_engines(self):

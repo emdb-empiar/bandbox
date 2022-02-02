@@ -5,7 +5,7 @@ quick wins
 - [DONE] detect redundant dirs [S2.a]
 - [DONE] detect obvious folders e.g tiff/*.tif* [S2.b]
 - [DONE] detect excessive files per directory [S2.c]
-- detect directories with mixed files [S3.a]
+- [DONE] detect directories with mixed files [S3.a]
 - detect cryptic names (against a dictionary) [N1]
 - detect dates in names [N1.b]
 - detect accessions e.g. 'EMPIAR' [N1.c]
@@ -92,3 +92,9 @@ async def n2_detect_long_names(tree, args):
     # print(f"info: working on {tree} with {args}...")
     dirs = tree.find_long_names()
     await _report(dirs, f"N2 - long names (>{bandbox.MAX_NAME_LENGTH} chars)...")
+
+
+async def n1_detect_dates_in_names(tree, args):
+    """Detect dates of various formats in names"""
+    dirs = tree.find_with_date_names()
+    await _report(dirs, f"N1 - entities with dates in names...")

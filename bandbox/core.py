@@ -160,3 +160,20 @@ class Tree(UserDict):
     def find_directories_with_mixed_files(self) -> list:
         mixed_dirs = Tree.get_directories_with_mixed_files(self)
         return mixed_dirs
+
+    @staticmethod
+    def get_with_date_names(tree_dict, parent="") -> list:
+        date_names = list()
+        for dir_entry, children in tree_dict.items():
+            if dir_entry == '_files':
+                for file in tree_dict['_files']:
+                    for date_cre in bandbox.DATE_CRE:
+                        if date_cre.match(file):
+                            date_names.append(f"{parent}{file}")
+            if isinstance(children, (dict, Tree)):
+                date_names += Tree.get_with_date_names(children, parent=f"{parent}{dir_entry}/")
+        return list(set(date_names))
+
+    def find_with_date_names(self) -> list:
+        date_names = Tree.get_with_date_names(self)
+        return date_names

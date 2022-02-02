@@ -10,6 +10,22 @@ OBVIOUS_FILES = "file|files|data|folder|inner_folder"
 OBVIOUS_FILES_CRE = re.compile(rf"^({OBVIOUS_FILES})$", re.IGNORECASE)
 MAX_FILES = 5
 MAX_NAME_LENGTH = 20
+DATE_INFIX_CHARS = r"-:/."  # must start with '-'
+MONTH_CHARS = (r"jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|"
+               r"january|february|march|april|may|june|july|august|september|october|november|december")
+DATE_CRE = [
+    # 12/31/2000 or 31/12/2000
+    re.compile(rf"^.*\d{{2}}[{DATE_INFIX_CHARS}]*\d{{2}}[{DATE_INFIX_CHARS}]*\d{{4}}.*$", re.IGNORECASE),
+    # 2000[]12[]31 or 2000[]31[]12
+    re.compile(rf"^.*\d{{4}}[{DATE_INFIX_CHARS}]*\d{{2}}[{DATE_INFIX_CHARS}]*\d{{2}}.*$", re.IGNORECASE),
+    # 31[]12[]00
+    re.compile(rf"^.*\d{{2}}[{DATE_INFIX_CHARS}]*\d{{2}}[{DATE_INFIX_CHARS}]*\d{{2}}.*$", re.IGNORECASE),
+    # 31[]Dec[]2000
+    re.compile(rf"^.*\d{{2}}[{DATE_INFIX_CHARS}]*({MONTH_CHARS})[{DATE_INFIX_CHARS}]*\d{{4}}.*$", re.IGNORECASE),
+    # Dec[]31[]2000
+    re.compile(rf"^.*\d{{4}}[{DATE_INFIX_CHARS}]*({MONTH_CHARS})[{DATE_INFIX_CHARS}]*\d{{2}}.*$", re.IGNORECASE)
+    # re.compile(rf"^.*.*$", re.IGNORECASE)
+]
 
 
 def get_gist_data():
