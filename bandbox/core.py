@@ -12,7 +12,7 @@ class Tree(UserDict):
         return super().__new__(cls)
 
     def insert(self, dir_entry: os.DirEntry, prefix: str = ''):
-        path_list = dir_entry.path.removeprefix(prefix).strip(self.sep).split(self.sep)
+        path_list = dir_entry.path[len(prefix):].strip(self.sep).split(self.sep)
         # first, deal with folders
         insertion_point = self.data
         for element in path_list[:-1]:
