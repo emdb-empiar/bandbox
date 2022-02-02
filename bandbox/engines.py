@@ -27,23 +27,29 @@ quick wins
 - detect broken symbolic links
 """
 
-import bandbox
+import shutil
+
 import styled
+
+import bandbox
 
 
 async def _report(dirs: list, rule_text: str, fail_text: str = '') -> None:
     """Reporting function"""
-    print(styled.Styled(f"[[ '{rule_text.ljust(60)}'|bold ]]"), end=" ")
+    width, height = shutil.get_terminal_size((80, 60))
+    right_col = 40
+    left_col = width - right_col - 1
+    print(styled.Styled(f"[[ '{rule_text.ljust(left_col)}'|bold ]]"), end=" ")
     if dirs:
         if fail_text:
-            print(styled.Styled(f"[[ '{fail_text.rjust(40)}'|fg-red:bold ]]"))
+            print(styled.Styled(f"[[ '{fail_text.rjust(right_col)}'|fg-red:bold ]]"))
         else:
-            fail_text = f"fail [{len(dirs)} directories]".rjust(40)
+            fail_text = f"fail [{len(dirs)} directories]".rjust(right_col)
             print(styled.Styled(f"[[ '{fail_text}'|fg-red:bold ]]"))
         for item in dirs:
             print(f"  * {item}")
     else:
-        ok_text = "ok".rjust(40)
+        ok_text = "ok".rjust(right_col)
         print(styled.Styled(f"[[ '{ok_text}'|fg-green:bold ]]"))
     print()
 
