@@ -41,6 +41,7 @@ class Tree(UserDict):
     @staticmethod
     def file_counts(file_list):
         file_counts = dict()
+        extension_warnings = set()
         for file_ in file_list:
             file_match = bandbox.FILE_EXTENSION_CAPTURE_CRE.match(file_)
             if file_match:
@@ -50,7 +51,10 @@ class Tree(UserDict):
                 else:
                     file_counts[ext] += 1
             else:
-                print(f"warning: file '{file_}' did not match any extension", file=sys.stderr)
+                ext = file_.split('.')[-1]
+                if ext not in extension_warnings:
+                    print(f"warning: unknown extension '{ext}'", file=sys.stderr)
+                    extension_warnings.add(ext)
         return file_counts
 
     def _recursive_string(self, extraction_point, indent=""):
