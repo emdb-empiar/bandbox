@@ -26,7 +26,12 @@ def analyse(args):
     # entry point
     dir_entries = utils.scandir_recursive(args.path)
     tree = Tree.from_data(dir_entries, prefix=str(args.path.parent))
-    asyncio.run(_analyse_engines(tree, args))
+    if sys.version_info.minor > 6: # 3.7+
+        asyncio.run(_analyse_engines(tree, args))
+    else: # python 3.6
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(_analyse_engines(tree, args))
+        loop.close()
 
 
 def view(args):

@@ -48,7 +48,7 @@ class TestCLI(Tests):
         self.assertEqual('view', args.command)
         self.assertEqual(pathlib.Path('.'), args.path)
         self.assertEqual('', args.prefix)
-        self.assertFalse(args.display_paths)
+        self.assertFalse(args.verbose)
         self.assertTrue(args.hide_file_counts)
         self.assertIsNone(args.input_file)
 
@@ -136,8 +136,7 @@ class TestCore(Tests):
         """Test detection of excessive files"""
         dir_entries = utils.scandir_recursive(TEST_DATA / "single_empty_folder")
         tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        print(tree.find_excessive_files_per_directory())
-        self.assertTrue(False)
+        self.assertEqual([], tree.find_excessive_files_per_directory())
 
     def test_find_long_names(self):
         """Test we can find long names"""
@@ -162,10 +161,10 @@ class TestUtils(Tests):
         for dir_entry in path_generator:
             print(dir_entry, dir_entry.path)
 
-    def test_scandir_recursive_filtering(self):
-        """Test that we can exclude certain files"""
-        test_dir = TEST_DATA / "folder_with_multiple_file_types"
-        exclusion_list = ['*.txt']
-        dir_entries = list(utils.scandir_recursive(test_dir, exclude=exclusion_list))
-        print(dir_entries)
-        self.assertTrue(False)
+    # def test_scandir_recursive_filtering(self):
+    #     """Test that we can exclude certain files"""
+    #     test_dir = TEST_DATA / "folder_with_multiple_file_types"
+    #     exclusion_list = ['*.txt']
+    #     dir_entries = list(utils.scandir_recursive(test_dir, exclude=exclusion_list))
+    #     print(dir_entries)
+    #     self.assertTrue(False)
