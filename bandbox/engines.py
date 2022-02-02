@@ -28,20 +28,24 @@ quick wins
 """
 
 import bandbox
+import styled
 
 
 async def _report(dirs: list, rule_text: str, fail_text: str = '') -> None:
     """Reporting function"""
-    print(rule_text, end=" ")
+    print(styled.Styled(f"[[ '{rule_text.ljust(60)}'|bold ]]"), end=" ")
     if dirs:
         if fail_text:
-            print(fail_text)
+            print(styled.Styled(f"[[ '{fail_text.rjust(40)}'|fg-red:bold ]]"))
         else:
-            print(f"fail [{len(dirs)} directories]")
+            fail_text = f"fail [{len(dirs)} directories]".rjust(40)
+            print(styled.Styled(f"[[ '{fail_text}'|fg-red:bold ]]"))
         for item in dirs:
             print(f"  * {item}")
     else:
-        print(f"ok")
+        ok_text = "ok".rjust(40)
+        print(styled.Styled(f"[[ '{ok_text}'|fg-green:bold ]]"))
+    print()
 
 
 async def s2_detect_redundant_directories(tree, args):
@@ -62,21 +66,16 @@ async def s2_detect_obvious_folders(tree, args):
     await _report(obvious_folders, f"S2 - obvious directory names...")
 
 
-
-
-
 async def s2_detect_excessive_files_per_directory(tree, args):
     """Detect excessive files per directory"""
     excess_files = tree.find_excessive_files_per_directory()
     await _report(excess_files, f"S2 - excessives (>{bandbox.MAX_FILES}) files per directory...")
 
+
 async def s3_detect_directories_with_mixed_files(tree, args):
     """Detect folders with mixed files"""
     mixed_files = tree.find_directories_with_mixed_files()
     await _report(mixed_files, f"S3 - directories with mixed files...")
-
-# async def _detect_(tree, args):
-#     """Detect"""
 
 
 async def n2_detect_long_names(tree, args):
@@ -84,6 +83,3 @@ async def n2_detect_long_names(tree, args):
     # print(f"info: working on {tree} with {args}...")
     dirs = tree.find_long_names()
     await _report(dirs, f"N2 - long names (>{bandbox.MAX_NAME_LENGTH} chars)...")
-
-
-

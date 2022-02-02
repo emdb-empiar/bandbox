@@ -11,6 +11,14 @@ class Tree(UserDict):
         cls.show_file_counts = show_file_counts
         return super().__new__(cls)
 
+    @classmethod
+    def from_data(cls, data, prefix="", show_file_counts=True):
+        tree = cls()
+        tree.show_file_counts = show_file_counts
+        for t in data:
+            tree.insert(t, prefix=prefix)
+        return tree
+
     def insert(self, dir_entry: os.DirEntry, prefix: str = ''):
         path_list = dir_entry.path[len(prefix):].strip(self.sep).split(self.sep)
         # first, deal with folders
@@ -74,14 +82,6 @@ class Tree(UserDict):
         string = self._recursive_string(self.data)
         return string
 
-    @classmethod
-    def from_data(cls, data, prefix="", show_file_counts=True):
-        tree = cls()
-        tree.show_file_counts = show_file_counts
-        for t in data:
-            tree.insert(t, prefix=prefix)
-        return tree
-
     @staticmethod
     def get_empty_dirs(tree_dict, parent=""):
         empty_dirs = list()
@@ -120,7 +120,7 @@ class Tree(UserDict):
     def get_excessive_files(tree_dict, parent=""):
         excess = list()
         for dir_entry, children in tree_dict.items():
-            if '_files' in tree_dict:
+            if dir_entry == '_files':  # in tree_dict:
                 if len(tree_dict['_files']) > bandbox.MAX_FILES:
                     excess.append(f"{parent}")
             if isinstance(children, (dict, Tree)):
@@ -149,11 +149,10 @@ class Tree(UserDict):
     def get_directories_with_mixed_files(tree_dict, parent=""):
         mixed_dirs = list()
         for dir_entry, children in tree_dict.items():
-            if '_files' in tree_dict:
+            if dir_entry == '_files':
                 files = Tree.file_counts(tree_dict['_files'])
-                print(files)
                 if len(files) > 1:
-                    mixed_dirs.append(f"{parent}{dir_entry}")
+                    mixed_dirs.append(f"{parent}")
             if isinstance(children, (dict, Tree)):
                 mixed_dirs += Tree.get_directories_with_mixed_files(children, parent=f"{parent}{dir_entry}/")
         return mixed_dirs

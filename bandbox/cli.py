@@ -8,9 +8,17 @@ path = {
     'args': ['path'],
     'kwargs': {
         'nargs': '?',
-        'default': '.',
+        'default': '',
         'type': pathlib.Path,
         'help': "path to diagnose [default: '.']"
+    }
+}
+
+prefix = {
+    'args': ['-p', '--prefix'],
+    'kwargs': {
+        'default': '',
+        'help': "prefix to exclude [default: '']"
     }
 }
 
@@ -33,6 +41,7 @@ analyse_parser = subparsers.add_parser(
 _add_arg(analyse_parser, path)
 analyse_parser.add_argument('--include-root', default=False, action='store_true',
                             help="include the root directory for analysis [default: False]")
+_add_arg(analyse_parser, prefix)
 
 # view
 view_parser = subparsers.add_parser(
@@ -41,7 +50,7 @@ view_parser = subparsers.add_parser(
     help='display the data tree'
 )
 _add_arg(view_parser, path)
-view_parser.add_argument('-p', '--prefix', default='', help="prefix to exclude [default: '']")
+_add_arg(view_parser, prefix)
 view_parser.add_argument('-v', '--verbose', default=False, action='store_true',
                          help="verbose output which will display all the directories found [default: False]")
 view_parser.add_argument('-f', '--input-file', help="input data from a file")

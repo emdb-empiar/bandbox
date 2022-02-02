@@ -94,7 +94,8 @@ class TestCore(Tests):
         for data_name, data in expected_output.items():
             dir_entries = utils.scandir_recursive(TEST_DATA / data_name)
             tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-            self.assertCountEqual(data, tree.data)
+            # the best we can do is compare keys
+            self.assertListEqual(list(data.keys()), list(tree.data.keys()))
 
     def test_find_empty_directories(self):
         """Test that we can find empty directories"""
@@ -136,15 +137,36 @@ class TestCore(Tests):
         """Test detection of excessive files"""
         dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_folders")
         tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertCountEqual([f'folder_with_multiple_folders/folder{i}/' for i in range(1,6)], tree.find_excessive_files_per_directory())
+        self.assertListEqual(sorted([f'folder_with_multiple_folders/folder{i}/' for i in range(1, 6)]),
+                             sorted(tree.find_excessive_files_per_directory()))
 
     def test_find_long_names(self):
         """Test we can find long names"""
         dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_long_name_folders")
         tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        print(tree.find_long_names())
+        self.assertListEqual(
+            sorted([
+                'folder_with_long_name_folders',
+                'folder_with_long_name_folders/a folder with & funny symbols in the ?? name',
+                'folder_with_long_name_folders/a folder with spaces in the name',
+                'folder_with_long_name_folders/a_folder_with_a_very_long_name_that_we_cannot_even_begin_to_comprehend',
+                'folder_with_long_name_folders/folder/inner_folder/another_very_long_name_that_we_are_still_wondering_'
+                'ever_found_the_light_of_day'
+            ]),
+            sorted(tree.find_long_names())
+        )
 
-
+    def test_find_directories_with_mixed_files(self):
+        """Test that we can find dirs with mixed files"""
+        dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_file_types/")
+        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
+        print(tree.find_directories_with_mixed_files())
+        self.assertListEqual(
+            sorted([
+                'folder_with_multiple_file_types/folder/'
+            ]),
+            sorted(tree.find_directories_with_mixed_files())
+        )
 
 
 class TestAnalyse(Tests):
