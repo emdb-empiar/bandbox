@@ -26,6 +26,8 @@ DATE_CRE = [
     re.compile(rf"^.*\d{{4}}[{DATE_INFIX_CHARS}]*({MONTH_CHARS})[{DATE_INFIX_CHARS}]*\d{{2}}.*$", re.IGNORECASE)
     # re.compile(rf"^.*.*$", re.IGNORECASE)
 ]
+ACCESSION_NAMES = "EMPIAR|EMDB"
+ACCESSION_NAMES_CRE = re.compile(rf"^.*({ACCESSION_NAMES}).*$", re.IGNORECASE)
 
 
 def get_gist_data():

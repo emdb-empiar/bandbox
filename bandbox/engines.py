@@ -7,8 +7,8 @@ quick wins
 - [DONE] detect excessive files per directory [S2.c]
 - [DONE] detect directories with mixed files [S3.a]
 - detect cryptic names (against a dictionary) [N1]
-- detect dates in names [N1.b]
-- detect accessions e.g. 'EMPIAR' [N1.c]
+- [DONE] detect dates in names [N1.b]
+- [DONE] detect accessions e.g. 'EMPIAR' [N1.c]
 - detect mixed case in names [N2.a]
 - detect periods in names [N2.a]
 - detect odd characters in names [N2.b]
@@ -28,33 +28,35 @@ quick wins
 """
 
 import shutil
-import threading
 
 import styled
 
 import bandbox
 
+# import threading # doesn't seem to be necessary
+
+width, height = shutil.get_terminal_size((80, 60))
+RIGHT_COL_WIDTH = 40
+LEFT_COL_WIDTH = width - RIGHT_COL_WIDTH - 1
+
 
 async def _report(dirs: list, rule_text: str, fail_text: str = '') -> None:
     """Reporting function"""
-    width, height = shutil.get_terminal_size((80, 60))
-    right_col = 40
-    left_col = width - right_col - 1
-    lock = threading.Lock()
-    with lock:
-        print(styled.Styled(f"[[ '{rule_text.ljust(left_col)}'|bold ]]"), end=" ")
-        if dirs:
-            if fail_text:
-                print(styled.Styled(f"[[ '{fail_text.rjust(right_col)}'|fg-red:bold ]]"))
-            else:
-                fail_text = f"fail [{len(dirs)} directories]".rjust(right_col)
-                print(styled.Styled(f"[[ '{fail_text}'|fg-red:bold ]]"))
-            for item in dirs:
-                print(f"  * {item}")
+    # lock = threading.Lock()
+    # with lock:
+    print(styled.Styled(f"[[ '{rule_text.ljust(LEFT_COL_WIDTH)}'|bold ]]"), end=" ")
+    if dirs:
+        if fail_text:
+            print(styled.Styled(f"[[ '{fail_text.rjust(RIGHT_COL_WIDTH)}'|fg-red:bold ]]"))
         else:
-            ok_text = "ok".rjust(right_col)
-            print(styled.Styled(f"[[ '{ok_text}'|fg-green:bold ]]"))
-        print()
+            fail_text = f"fail [{len(dirs)} directories]".rjust(RIGHT_COL_WIDTH)
+            print(styled.Styled(f"[[ '{fail_text}'|fg-red:bold ]]"))
+        for item in dirs:
+            print(f"  * {item}")
+    else:
+        ok_text = "ok".rjust(RIGHT_COL_WIDTH)
+        print(styled.Styled(f"[[ '{ok_text}'|fg-green:bold ]]"))
+    print()
 
 
 async def s2_detect_redundant_directories(tree, args):
@@ -98,3 +100,15 @@ async def n1_detect_dates_in_names(tree, args):
     """Detect dates of various formats in names"""
     dirs = tree.find_with_date_names()
     await _report(dirs, f"N1 - entities with dates in names...")
+
+
+async def n1_detect_accessions_in_names(tree, args):
+    """Detect accessions in names"""
+    dirs = tree.find_accessions_in_names()
+    await _report(dirs, f"N1 - accessions in names...")
+
+
+async def n2_detect_mixed_case(tree, args):
+    """Detect mixed case"""
+    dirs = tree.find_mixed_case()
+    await _report(dirs, f"N2 - mixed case in names...")

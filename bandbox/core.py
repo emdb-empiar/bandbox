@@ -1,8 +1,10 @@
 import os
+import re
 import sys
 from collections import UserDict
 
 import bandbox
+from bandbox.engines import RIGHT_COL_WIDTH, LEFT_COL_WIDTH
 
 
 class Tree(UserDict):
@@ -90,6 +92,7 @@ class Tree(UserDict):
     def get_empty_dirs(tree_dict, parent=""):
         empty_dirs = list()
         for dir_entry, children in tree_dict.items():
+            # predicate
             if len(children) == 0:  # terminal empty folder
                 empty_dirs.append(f"{parent}{dir_entry}")
             if len(children) == 1:  # non-terminal folder with files only
@@ -124,9 +127,13 @@ class Tree(UserDict):
     def get_excessive_files(tree_dict, parent=""):
         excess = list()
         for dir_entry, children in tree_dict.items():
+            # assertion function that returns, say, a boolean
+            # assert_excessive_files(tree_dict, rule,
             if dir_entry == '_files':  # in tree_dict:
                 if len(tree_dict['_files']) > bandbox.MAX_FILES:
-                    excess.append(f"{parent}")
+                    dir_name = parent.ljust(LEFT_COL_WIDTH)
+                    num_files = f"[{len(tree_dict['_files'])} files]"
+                    excess.append(f"{dir_name}{num_files.rjust(RIGHT_COL_WIDTH - 3)}")
             if isinstance(children, (dict, Tree)):
                 excess += Tree.get_excessive_files(children, parent=f"{parent}{dir_entry}/")
         return excess
@@ -181,3 +188,50 @@ class Tree(UserDict):
     def find_with_date_names(self) -> list:
         date_names = Tree.get_with_date_names(self)
         return date_names
+
+    @staticmethod
+    def get_accessions_in_names(tree_dict, parent=""):
+        accession_names = list()
+        for dir_entry, children in tree_dict.items():
+            # start_eval
+            if dir_entry == '_files':
+                for file in tree_dict['_files']:
+                    if bandbox.ACCESSION_NAMES_CRE.match(file):
+                        accession_names.append(f"{parent}{file}")
+            # end_eval
+            if isinstance(children, (dict, Tree)):
+                accession_names += Tree.get_accessions_in_names(children, parent=f"{parent}{dir_entry}/")
+        return accession_names
+
+    def find_accessions_in_names(self) -> list:
+        accession_names = Tree.get_accessions_in_names(self)
+        return accession_names
+
+    @staticmethod
+    def evaluate_predicate(tree_dict, assertion_callback, parent=""):
+        """Generic rule to evaluate elements of the tree"""
+        output = list()
+        for dir_entry, children in tree_dict.items():
+            # each method that finds something has to provide an assertion method which takes
+            # - dir_entry: the current directory entry
+            # - children: any children associated with the current directory
+            # - tree_dict: the parent directory
+            output += assertion_callback(dir_entry, children, tree_dict, parent)
+            if isinstance(children, (dict, Tree)):
+                output += Tree.evaluate_predicate(children, assertion_callback, parent=f"{parent}{dir_entry}/")
+        return output
+
+    def find_mixed_case(self) -> list:
+        # todo: clarify the various arguments
+        def mixed_case_predicate(dir_entry, children, parent_dir, parent):  # assertion callback for this 'find...' method
+            output = list()
+            if dir_entry == '_files':
+                for file in parent_dir['_files']:
+                    if re.match(r".*[A-Z].*", file) and re.match(r".*[a-z].*", file):
+                        output.append(f"{parent}{file}")
+            if re.match(r".*[A-Z].*", dir_entry) and re.match(r".*[a-z].*", dir_entry):
+                output.append(f"{parent}{dir_entry}/")
+            return output
+
+        mixed_case = Tree.evaluate_predicate(self, mixed_case_predicate)
+        return mixed_case

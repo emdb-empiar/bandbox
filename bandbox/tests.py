@@ -188,6 +188,23 @@ class TestCore(Tests):
             sorted(tree.find_with_date_names())
         )
 
+    def test_find_accessions_in_names(self):
+        """Test that we can spot accessions in names"""
+        dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_files/")
+        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
+        self.assertEqual(
+            ['folder_with_multiple_files/folder/file-EMPIAR-someting.tif'],
+            tree.find_accessions_in_names()
+        )
+
+    def test_find_mixed_case(self):
+        """Test that we can find mixed case"""
+        dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_files/")
+        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
+        self.assertTrue(
+            'folder_with_multiple_files/folder/file-EMPIAR-someting.tif' in
+            tree.find_mixed_case()
+        )
 
 class TestAnalyse(Tests):
     def test_analyse_all_engines(self):
