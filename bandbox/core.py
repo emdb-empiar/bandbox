@@ -109,7 +109,7 @@ class Tree(UserDict):
                 output.append(f"{parent_path}{dir_entry}")
             if len(children_dict) == 1:  # non-terminal folder with files only
                 if "_files" not in children_dict and not isinstance(children_dict, list):
-                    output.append(f"{parent_path}{dir_entry}")
+                    output.append(f"{parent_path}{dir_entry}/")
             return output
 
         empty_dirs = Tree.evaluate_predicate(self, empty_directories_predicate)
@@ -223,7 +223,7 @@ class Tree(UserDict):
                     if bandbox.ODD_CHARS_CRE.match(file):
                         output.append(f"{parent_path}{file}")
             if bandbox.ODD_CHARS_CRE.match(dir_entry):
-                output.append(f"{parent_path}{dir_entry}")
+                output.append(f"{parent_path}{dir_entry}/")
             return output
 
         odd_characters = Tree.evaluate_predicate(self, odd_characters_in_names_predicate)
@@ -239,7 +239,7 @@ class Tree(UserDict):
                     if bandbox.MAX_PERIODS_IN_NAME_CRE.match(file):
                         output.append(f"{parent_path}{file}")
             if bandbox.MAX_PERIODS_IN_NAME_CRE.match(dir_entry):
-                output.append(f"{parent_path}{dir_entry}")
+                output.append(f"{parent_path}{dir_entry}/")
             return output
 
         odd_characters = Tree.evaluate_predicate(self, excessive_periods_in_names_predicate)
@@ -255,7 +255,7 @@ class Tree(UserDict):
                     if bandbox.EXTERNAL_REFS_CRE.match(file):
                         output.append(f"{parent_path}{file}")
             if bandbox.EXTERNAL_REFS_CRE.match(dir_entry):
-                output.append(f"{parent_path}{dir_entry}")
+                output.append(f"{parent_path}{dir_entry}/")
             return output
 
         external_refs = Tree.evaluate_predicate(self, external_references_in_names_predicate)
