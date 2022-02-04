@@ -4,7 +4,6 @@ import sys
 from collections import UserDict
 
 import bandbox
-from bandbox.engines import RIGHT_COL_WIDTH, LEFT_COL_WIDTH
 
 
 class Tree(UserDict):
@@ -23,7 +22,7 @@ class Tree(UserDict):
 
     def insert(self, dir_entry: os.DirEntry, prefix: str = ''):
         path_list = dir_entry.path[len(prefix):].strip(self.sep).split(self.sep)
-        # first, deal with folders
+        # first, deal with directories
         insertion_point = self.data
         for element in path_list[:-1]:
             if element not in insertion_point:
@@ -89,148 +88,128 @@ class Tree(UserDict):
         return string
 
     @staticmethod
-    def get_empty_dirs(tree_dict, parent=""):
-        empty_dirs = list()
-        for dir_entry, children in tree_dict.items():
-            # predicate
-            if len(children) == 0:  # terminal empty folder
-                empty_dirs.append(f"{parent}{dir_entry}")
-            if len(children) == 1:  # non-terminal folder with files only
-                if "_files" not in children and not isinstance(children, list):
-                    empty_dirs.append(f"{parent}{dir_entry}")
-            if isinstance(children, (dict, Tree)):
-                empty_dirs += Tree.get_empty_dirs(children, parent=f"{parent}{dir_entry}/")
-        return empty_dirs
+    def evaluate_predicate(tree_dict, assertion_callback, parent=""):
+        """Generic rule to evaluate elements of the tree"""
+        output = list()
+        for dir_entry, children_dict in tree_dict.items():
+            # each method that finds something has to provide an assertion method which takes
+            # - dir_entry: the current directory entry
+            # - children_dict: any children dictionary associated with the current directory
+            # - tree_dict: the parent directory dictionary
+            # - parent_path: string with the path to the dir_entry:
+            output += assertion_callback(dir_entry, children_dict, tree_dict, parent)
+            if isinstance(children_dict, (dict, Tree)):
+                output += Tree.evaluate_predicate(children_dict, assertion_callback, parent=f"{parent}{dir_entry}/")
+        return output
 
     def find_empty_directories(self, include_root=True) -> list:
         """Identify directories with no files"""
-        empty_dirs = Tree.get_empty_dirs(self)
+
+        def empty_directories_predicate(dir_entry, children_dict, parent_dict, parent_path):
+            output = list()
+            if len(children_dict) == 0:  # terminal empty folder
+                output.append(f"{parent_path}{dir_entry}")
+            if len(children_dict) == 1:  # non-terminal folder with files only
+                if "_files" not in children_dict and not isinstance(children_dict, list):
+                    output.append(f"{parent_path}{dir_entry}")
+            return output
+
+        empty_dirs = Tree.evaluate_predicate(self, empty_directories_predicate)
         if include_root:
             return empty_dirs
         return empty_dirs[1:]
 
-    @staticmethod
-    def get_obvious_folders(tree_dict, parent=""):
-        obvious = list()
-        for dir_entry, children in tree_dict.items():
+    def find_obvious_directories(self, include_root=True) -> list:
+        """Identify directories with obvious names"""
+
+        def obvious_directories_predicate(dir_entry, children_dict, parent_dict, parent_path):
+            output = list()
             if bandbox.OBVIOUS_FILES_CRE.match(dir_entry):
-                obvious.append(f"{parent}{dir_entry}")
-            if isinstance(children, (dict, Tree)):
-                obvious += Tree.get_obvious_folders(children, parent=f"{parent}{dir_entry}/")
-        return obvious
+                output.append(f"{parent_path}{dir_entry}")
+            return output
 
-    def find_obvious_folders(self, include_root=True) -> list:
-        obvious_dirs = Tree.get_obvious_folders(self)
-        return obvious_dirs
-
-    @staticmethod
-    def get_excessive_files(tree_dict, parent=""):
-        excess = list()
-        for dir_entry, children in tree_dict.items():
-            # assertion function that returns, say, a boolean
-            # assert_excessive_files(tree_dict, rule,
-            if dir_entry == '_files':  # in tree_dict:
-                if len(tree_dict['_files']) > bandbox.MAX_FILES:
-                    dir_name = parent.ljust(LEFT_COL_WIDTH)
-                    num_files = f"[{len(tree_dict['_files'])} files]"
-                    excess.append(f"{dir_name}{num_files.rjust(RIGHT_COL_WIDTH - 3)}")
-            if isinstance(children, (dict, Tree)):
-                excess += Tree.get_excessive_files(children, parent=f"{parent}{dir_entry}/")
-        return excess
+        obvious_directories = Tree.evaluate_predicate(self, obvious_directories_predicate)
+        return obvious_directories
 
     def find_excessive_files_per_directory(self) -> list:
-        excess = Tree.get_excessive_files(self)
+        """Identify directories with excessive files"""
+
+        def excessive_files_per_directory_predicate(dir_entry, children_dict, parent_dict, parent_path):
+            output = list()
+            if dir_entry == '_files':  # in parent_dict:
+                if len(parent_dict['_files']) > bandbox.MAX_FILES:
+                    # fixme: presentation logic bled in ---> remove
+                    # dir_name = parent_path.ljust(LEFT_COL_WIDTH)
+                    # num_files = f"[{len(parent_dict['_files'])} files]"
+                    # output.append(f"{dir_name}{num_files.rjust(RIGHT_COL_WIDTH - 3)}")
+                    output.append(f"{parent_path}")
+            return output
+
+        excess = Tree.evaluate_predicate(self, excessive_files_per_directory_predicate)
         return excess
 
-    @staticmethod
-    def get_long_names(tree_dict, parent=""):
-        long_names = list()
-        for dir_entry, children in tree_dict.items():
-            if len(dir_entry) > bandbox.MAX_NAME_LENGTH:
-                long_names.append(f"{parent}{dir_entry}")
-            if isinstance(children, (dict, Tree)):
-                long_names += Tree.get_long_names(children, parent=f"{parent}{dir_entry}/")
-        return long_names
-
     def find_long_names(self) -> list:
-        long_names = Tree.get_long_names(self)
-        return long_names
+        """Identify path elements with long names"""
 
-    @staticmethod
-    def get_directories_with_mixed_files(tree_dict, parent=""):
-        mixed_dirs = list()
-        for dir_entry, children in tree_dict.items():
-            if dir_entry == '_files':
-                files = Tree.file_counts(tree_dict['_files'])
-                if len(files) > 1:
-                    mixed_dirs.append(f"{parent}")
-            if isinstance(children, (dict, Tree)):
-                mixed_dirs += Tree.get_directories_with_mixed_files(children, parent=f"{parent}{dir_entry}/")
-        return mixed_dirs
+        def long_names_predicate(dir_entry, children_dict, parent_dict, parent_path):
+            output = list()
+            if len(dir_entry) > bandbox.MAX_NAME_LENGTH:
+                output.append(f"{parent_path}{dir_entry}")
+            return output
+
+        long_names = Tree.evaluate_predicate(self, long_names_predicate)
+        return long_names
 
     def find_directories_with_mixed_files(self) -> list:
-        mixed_dirs = Tree.get_directories_with_mixed_files(self)
-        return mixed_dirs
-
-    @staticmethod
-    def get_with_date_names(tree_dict, parent="") -> list:
-        date_names = list()
-        for dir_entry, children in tree_dict.items():
-            if dir_entry == '_files':
-                for file in tree_dict['_files']:
-                    for date_cre in bandbox.DATE_CRE:
-                        if date_cre.match(file):
-                            date_names.append(f"{parent}{file}")
-            if isinstance(children, (dict, Tree)):
-                date_names += Tree.get_with_date_names(children, parent=f"{parent}{dir_entry}/")
-        return list(set(date_names))
-
-    def find_with_date_names(self) -> list:
-        date_names = Tree.get_with_date_names(self)
-        return date_names
-
-    @staticmethod
-    def get_accessions_in_names(tree_dict, parent=""):
-        accession_names = list()
-        for dir_entry, children in tree_dict.items():
-            # start_eval
-            if dir_entry == '_files':
-                for file in tree_dict['_files']:
-                    if bandbox.ACCESSION_NAMES_CRE.match(file):
-                        accession_names.append(f"{parent}{file}")
-            # end_eval
-            if isinstance(children, (dict, Tree)):
-                accession_names += Tree.get_accessions_in_names(children, parent=f"{parent}{dir_entry}/")
-        return accession_names
-
-    def find_accessions_in_names(self) -> list:
-        accession_names = Tree.get_accessions_in_names(self)
-        return accession_names
-
-    @staticmethod
-    def evaluate_predicate(tree_dict, assertion_callback, parent=""):
-        """Generic rule to evaluate elements of the tree"""
-        output = list()
-        for dir_entry, children in tree_dict.items():
-            # each method that finds something has to provide an assertion method which takes
-            # - dir_entry: the current directory entry
-            # - children: any children associated with the current directory
-            # - tree_dict: the parent directory
-            output += assertion_callback(dir_entry, children, tree_dict, parent)
-            if isinstance(children, (dict, Tree)):
-                output += Tree.evaluate_predicate(children, assertion_callback, parent=f"{parent}{dir_entry}/")
-        return output
-
-    def find_mixed_case(self) -> list:
-        # todo: clarify the various arguments
-        def mixed_case_predicate(dir_entry, children, parent_dir, parent):  # assertion callback for this 'find...' method
+        def directories_with_mixed_files_predicate(dir_entry, children_dict, parent_dict, parent_path):
             output = list()
             if dir_entry == '_files':
-                for file in parent_dir['_files']:
-                    if re.match(r".*[A-Z].*", file) and re.match(r".*[a-z].*", file):
-                        output.append(f"{parent}{file}")
-            if re.match(r".*[A-Z].*", dir_entry) and re.match(r".*[a-z].*", dir_entry):
-                output.append(f"{parent}{dir_entry}/")
+                files = Tree.file_counts(parent_dict['_files'])
+                if len(files) > 1:
+                    output.append(f"{parent_path}")
+            return output
+
+        mixed_dirs = Tree.evaluate_predicate(self, directories_with_mixed_files_predicate)
+        return mixed_dirs
+
+    def find_with_date_names(self) -> list:
+
+        def date_names_predicate(dir_entry, children_dict, parent_dict, parent_path):
+            output = list()
+            if dir_entry == '_files':
+                for file in parent_dict['_files']:
+                    for date_cre in bandbox.DATE_CRE:
+                        if date_cre.match(file):
+                            output.append(f"{parent_path}{file}")
+            return output
+
+        date_names = list(set(Tree.evaluate_predicate(self, date_names_predicate)))
+        return date_names
+
+    def find_accessions_in_names(self) -> list:
+        def accessions_in_names_predicate(dir_entry, chidren_dict, parent_dict, parent_path):
+            output = list()
+            if dir_entry == '_files':
+                for file in parent_dict['_files']:
+                    if bandbox.ACCESSION_NAMES_CRE.match(file):
+                        output.append(f"{parent_path}{file}")
+            return output
+
+        accession_names = Tree.evaluate_predicate(self, accessions_in_names_predicate)
+        return accession_names
+
+    def find_mixed_case(self) -> list:
+        """Find elements of the tree with names having mixed case"""
+
+        def mixed_case_predicate(dir_entry, children_dict, parent_dict,
+                                 parent_path):  # assertion callback for this 'find...' method
+            output = list()
+            if dir_entry == '_files':  # file contents
+                for file in parent_dict['_files']:
+                    if re.match(r".*[A-Z].*", file) and re.match(r".*[a-z].*", file):  # mixed case
+                        output.append(f"{parent_path}{file}")
+            if re.match(r".*[A-Z].*", dir_entry) and re.match(r".*[a-z].*", dir_entry):  # if the dirname has mixed case
+                output.append(f"{parent_path}{dir_entry}/")
             return output
 
         mixed_case = Tree.evaluate_predicate(self, mixed_case_predicate)
