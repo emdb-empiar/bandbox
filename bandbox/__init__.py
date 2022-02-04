@@ -31,7 +31,9 @@ ACCESSION_NAMES_CRE = re.compile(rf"^.*({ACCESSION_NAMES}).*$", re.IGNORECASE)
 ODD_CHARS = "&?! ,"
 ODD_CHARS_CRE = re.compile(rf".*[{ODD_CHARS}].*")
 MAX_PERIODS_IN_NAME = 1
-MAX_PERIODS_IN_NAME_CRE = re.compile(rf".*([.].*){{{MAX_PERIODS_IN_NAME + 1},}}.*") # tricky!
+MAX_PERIODS_IN_NAME_CRE = re.compile(rf".*([.].*){{{MAX_PERIODS_IN_NAME + 1},}}.*")  # tricky!
+EXTERNAL_REFS = "figure|supplementary"
+EXTERNAL_REFS_CRE = re.compile(rf"^.*({EXTERNAL_REFS}).*$", re.IGNORECASE)
 
 
 def get_gist_data():

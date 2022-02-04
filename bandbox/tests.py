@@ -232,12 +232,30 @@ class TestCore(Tests):
             #         'folder_with_long_name_folders/a folder with spaces in the name'
             #     ],
             # },
+            # {
+            #     "tree_method": "find_excessive_periods_in_names",
+            #     "source_folder": "folder_with_long_name_folders",
+            #     "expected_value": [
+            #         'folder_with_long_name_folders/a.folder.with.periods.in.the.name',
+            #         'folder_with_long_name_folders/folder/a.file.with.many.periods.txt'
+            #     ],
+            # },
+            # {
+            #     "tree_method": "find_external_references_in_names",
+            #     "source_folder": "folder_with_long_name_folders",
+            #     "expected_value": [
+            #         'folder_with_long_name_folders/folder/figure5.jpg',
+            #         'folder_with_long_name_folders/folder/supplementary-figure3a.jpg',
+            #     ],
+            # },
             {
-                "tree_method": "find_excessive_periods_in_names",
+                "tree_method": "find_unknown_file_extensions",
                 "source_folder": "folder_with_long_name_folders",
                 "expected_value": [
-                    'folder_with_long_name_folders/a.folder.with.periods.in.the.name',
-                    'folder_with_long_name_folders/folder/a.file.with.many.periods.txt'
+                    'folder_with_long_name_folders/folder/file.wrx',
+                    'folder_with_long_name_folders/folder/file.onx',
+                    'folder_with_long_name_folders/folder/file.dog',
+
                 ],
             },
         ]

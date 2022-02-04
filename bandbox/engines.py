@@ -10,12 +10,12 @@ quick wins
 - [DONE] detect dates in names [N1.b]
 - [DONE] detect accessions e.g. 'EMPIAR' [N1.c]
 - [DONE] detect mixed case in names [N2.a]
-- detect periods in names [N2.a]
+- [DONE] detect periods in names [N2.a]
 - [DONE] detect odd characters in names [N2.b]
-- detect long names [N2.d]
+- [DONE] detect long names [N2.d]
 - detect inconsistent names [N3.a]
-- detect external references e.g. 'figure' [N3.c]
-- detect words to avoid e.g. 'files', 'data' [N3.c]
+- [DONE] detect external references e.g. 'figure' [N3.c]
+- [DONE] detect words to avoid e.g. 'files', 'data' [N3.c]
 - detect missing padding [N3.e]
 - detect embedded paths (needs file format library) [N3.f]
 - detect unknown extensions [M1.a]
@@ -122,3 +122,12 @@ async def n2_detect_odd_characets_in_names(tree, args):
 async def n2_detect_excessive_periods_in_names(tree, args):
     dirs = tree.find_excessive_periods_in_names()
     await _report(dirs, f"N2 - excessive periods in names...")
+
+
+async def n3_detect_external_references_in_names(tree, args):
+    dirs = tree.find_external_references_in_names()
+    await _report(dirs, f"N3 - external references in names...")
+
+async def m1_detect_unknown_file_extensions(tree, args):
+    dirs = tree.find_unknown_file_extensions()
+    await _report(dirs, f"M1 - unknown file extensions...")

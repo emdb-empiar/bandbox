@@ -42,20 +42,14 @@ class Tree(UserDict):
     @staticmethod
     def file_counts(file_list):
         file_counts = dict()
-        extension_warnings = set()
         for file_ in file_list:
-            file_match = bandbox.FILE_EXTENSION_CAPTURE_CRE.match(file_)
+            file_match = bandbox.FILE_CRE.match(file_)
             if file_match:
-                ext = file_match.group('ext')
+                ext = file_.split('.')[-1]
                 if ext not in file_counts:
                     file_counts[ext] = 1
                 else:
                     file_counts[ext] += 1
-            else:
-                ext = file_.split('.')[-1]
-                if ext not in extension_warnings:
-                    print(f"warning: unknown extension '{ext}'", file=sys.stderr)
-                    extension_warnings.add(ext)
         return file_counts
 
     def _recursive_string(self, extraction_point, indent=""):
@@ -75,7 +69,7 @@ class Tree(UserDict):
                     file_counts_str = ""
                     file_counts = self.file_counts(value)
                     for ext, count in file_counts.items():
-                        file_counts_str += f"{ext}={count};"
+                        file_counts_str += f"{ext}={count}; "
                     string += f"{indent}└── [{len(value)} {item}: {file_counts_str}]\n"
                 else:
                     string += f"{indent}└── [{len(value)} {item}]\n"
@@ -246,3 +240,32 @@ class Tree(UserDict):
 
         odd_characters = Tree.evaluate_predicate(self, excessive_periods_in_names_predicate)
         return odd_characters
+
+    def find_external_references_in_names(self):
+        """Find external references in names"""
+
+        def external_references_in_names_predicate(dir_entry, children_dict, parent_dict, parent_path):
+            output = list()
+            if dir_entry == '_files':
+                for file in parent_dict['_files']:
+                    if bandbox.EXTERNAL_REFS_CRE.match(file):
+                        output.append(f"{parent_path}{file}")
+            if bandbox.EXTERNAL_REFS_CRE.match(dir_entry):
+                output.append(f"{parent_path}{dir_entry}")
+            return output
+
+        external_refs = Tree.evaluate_predicate(self, external_references_in_names_predicate)
+        return external_refs
+
+    def find_unknown_file_extensions(self):
+        """Find unknown file extensions"""
+        def unknown_file_extensions_predicate(dir_entry, children_dict, parent_dict, parent_path):
+            output = list()
+            if dir_entry == '_files':
+                for file in parent_dict['_files']:
+                    if not bandbox.FILE_EXTENSION_CAPTURE_CRE.match(file):
+                        output.append(f"{parent_path}{file}")
+            return output
+
+        unknown_exts = Tree.evaluate_predicate(self, unknown_file_extensions_predicate)
+        return unknown_exts
