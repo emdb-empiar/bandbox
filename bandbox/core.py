@@ -266,7 +266,7 @@ class Tree(UserDict):
         def unknown_file_extensions_predicate(dir_entry, children_dict, parent_dict, parent_path):
             output = list()
             if dir_entry == '_files':
-                for file in parenπt_dict['_files']:
+                for file in parent_dict['_files']:
                     if not bandbox.FILE_EXTENSION_CAPTURE_CRE.match(file):
                         output.append(f"{parent_path}{file}")
             return output
