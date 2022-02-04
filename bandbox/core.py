@@ -88,7 +88,7 @@ class Tree(UserDict):
         return string
 
     @staticmethod
-    def evaluate_predicate(tree_dict, assertion_callback, parent=""):
+    def evaluate_predicate(tree_dict, predicate, parent=""):
         """Generic rule to evaluate elements of the tree"""
         output = list()
         for dir_entry, children_dict in tree_dict.items():
@@ -97,9 +97,9 @@ class Tree(UserDict):
             # - children_dict: any children dictionary associated with the current directory
             # - tree_dict: the parent directory dictionary
             # - parent_path: string with the path to the dir_entry:
-            output += assertion_callback(dir_entry, children_dict, tree_dict, parent)
+            output += predicate(dir_entry, children_dict, tree_dict, parent)
             if isinstance(children_dict, (dict, Tree)):
-                output += Tree.evaluate_predicate(children_dict, assertion_callback, parent=f"{parent}{dir_entry}/")
+                output += Tree.evaluate_predicate(children_dict, predicate, parent=f"{parent}{dir_entry}/")
         return output
 
     def find_empty_directories(self, include_root=True) -> list:
@@ -214,3 +214,35 @@ class Tree(UserDict):
 
         mixed_case = Tree.evaluate_predicate(self, mixed_case_predicate)
         return mixed_case
+
+    def find_odd_characters_in_names(self):
+        """Find odd characters in path components"""
+
+        def odd_characters_in_names_predicate(dir_entry, children_dict, parent_dict, parent_path):
+            output = list()
+            if dir_entry == '_files':
+                for file in parent_dict['_files']:
+                    if bandbox.ODD_CHARS_CRE.match(file):
+                        output.append(f"{parent_path}{file}")
+            if bandbox.ODD_CHARS_CRE.match(dir_entry):
+                output.append(f"{parent_path}{dir_entry}")
+            return output
+
+        odd_characters = Tree.evaluate_predicate(self, odd_characters_in_names_predicate)
+        return odd_characters
+
+    def find_excessive_periods_in_names(self):
+        """Find odd characters in path components"""
+
+        def excessive_periods_in_names_predicate(dir_entry, children_dict, parent_dict, parent_path):
+            output = list()
+            if dir_entry == '_files':
+                for file in parent_dict['_files']:
+                    if bandbox.MAX_PERIODS_IN_NAME_CRE.match(file):
+                        output.append(f"{parent_path}{file}")
+            if bandbox.MAX_PERIODS_IN_NAME_CRE.match(dir_entry):
+                output.append(f"{parent_path}{dir_entry}")
+            return output
+
+        odd_characters = Tree.evaluate_predicate(self, excessive_periods_in_names_predicate)
+        return odd_characters

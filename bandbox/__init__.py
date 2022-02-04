@@ -28,6 +28,10 @@ DATE_CRE = [
 ]
 ACCESSION_NAMES = "EMPIAR|EMDB"
 ACCESSION_NAMES_CRE = re.compile(rf"^.*({ACCESSION_NAMES}).*$", re.IGNORECASE)
+ODD_CHARS = "&?! ,"
+ODD_CHARS_CRE = re.compile(rf".*[{ODD_CHARS}].*")
+MAX_PERIODS_IN_NAME = 1
+MAX_PERIODS_IN_NAME_CRE = re.compile(rf".*([.].*){{{MAX_PERIODS_IN_NAME + 1},}}.*") # tricky!
 
 
 def get_gist_data():

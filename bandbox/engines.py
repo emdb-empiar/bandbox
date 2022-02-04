@@ -9,9 +9,9 @@ quick wins
 - detect cryptic names (against a dictionary) [N1]
 - [DONE] detect dates in names [N1.b]
 - [DONE] detect accessions e.g. 'EMPIAR' [N1.c]
-- detect mixed case in names [N2.a]
+- [DONE] detect mixed case in names [N2.a]
 - detect periods in names [N2.a]
-- detect odd characters in names [N2.b]
+- [DONE] detect odd characters in names [N2.b]
 - detect long names [N2.d]
 - detect inconsistent names [N3.a]
 - detect external references e.g. 'figure' [N3.c]
@@ -71,9 +71,9 @@ async def s2_detect_redundant_directories(tree, args):
     await _report(empty_folders, f"S2 - redundant directories...")
 
 
-async def s2_detect_obvious_folders(tree, args):
+async def s2_detect_obvious_directories(tree, args):
     """Detect obvious folders"""
-    obvious_folders = tree.find_obvious_folders(include_root=args.include_root)
+    obvious_folders = tree.find_obvious_directories(include_root=args.include_root)
     await _report(obvious_folders, f"S2 - obvious directory names...")
 
 
@@ -112,3 +112,13 @@ async def n2_detect_mixed_case(tree, args):
     """Detect mixed case"""
     dirs = tree.find_mixed_case()
     await _report(dirs, f"N2 - mixed case in names...")
+
+
+async def n2_detect_odd_characets_in_names(tree, args):
+    dirs = tree.find_odd_characters_in_names()
+    await _report(dirs, f"N2 - odd characters in names...")
+
+
+async def n2_detect_excessive_periods_in_names(tree, args):
+    dirs = tree.find_excessive_periods_in_names()
+    await _report(dirs, f"N2 - excessive periods in names...")
