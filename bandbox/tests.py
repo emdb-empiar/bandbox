@@ -97,114 +97,148 @@ class TestCore(Tests):
             # the best we can do is compare keys
             self.assertListEqual(list(data.keys()), list(tree.data.keys()))
 
-    def test_find_empty_directories(self):
-        """Test that we can find empty directories"""
-        dir_entries = utils.scandir_recursive(TEST_DATA / "single_empty_folder")
-        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertEqual(
-            ['single_empty_folder', 'single_empty_folder/folder', 'single_empty_folder/folder/inner_folder'],
-            tree.find_empty_directories())
-        self.assertEqual(['single_empty_folder/folder', 'single_empty_folder/folder/inner_folder'],
-                         tree.find_empty_directories(include_root=False))
-        dir_entries = utils.scandir_recursive(TEST_DATA / "empty_folder")
-        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertEqual(['empty_folder', 'empty_folder/folder'], tree.find_empty_directories())
-        self.assertEqual(['empty_folder/folder'], tree.find_empty_directories(include_root=False))
-        dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_folders")
-        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertEqual([], tree.find_empty_directories())
-        self.assertEqual([], tree.find_empty_directories(include_root=False))
-        dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_file_types")
-        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertEqual(['folder_with_multiple_file_types', 'folder_with_multiple_file_types/folder/files',
-                          'folder_with_multiple_file_types/folder/inner_folder'], tree.find_empty_directories())
-        self.assertEqual(
-            ['folder_with_multiple_file_types/folder/files', 'folder_with_multiple_file_types/folder/inner_folder'],
-            tree.find_empty_directories(include_root=False))
+    def test_all_find_methods(self):
+        """Test all find methods
 
-    def test_find_obvious_folders(self):
-        """Test that we can detect obvious names"""
-        dir_entries = utils.scandir_recursive(TEST_DATA / "single_empty_folder")
-        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertEqual(['single_empty_folder/folder', 'single_empty_folder/folder/inner_folder'],
-                         tree.find_obvious_folders())
-        dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_file_types")
-        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertEqual(['folder_with_multiple_file_types/folder', 'folder_with_multiple_file_types/folder/files',
-                          'folder_with_multiple_file_types/folder/inner_folder'], tree.find_obvious_folders())
+        There is no need to write a method for each when the only thing that changes is the data. Rather, we compile
+        all the data into a dictionary and only update the dictionary as we add new find methods.
 
-    def test_find_excessive_files_per_directory(self):
-        """Test detection of excessive files"""
-        dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_folders")
-        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertListEqual(sorted([f'folder_with_multiple_folders/folder{i}/' for i in range(1, 6)]),
-                             sorted(tree.find_excessive_files_per_directory()))
+        Each find method on the tree will need:
+        - the method name
+        - the name of the source folder
+        - the expected output
+        - a tree instance (created on the fly)
+        """
+        data = [
+            {
+                "tree_method": "find_mixed_case",
+                "source_folder": "folder_with_multiple_files",
+                "expected_value": ['folder_with_multiple_files/folder/file-EMPIAR-someting.tif']
+            },
+            {
+                "tree_method": "find_accessions_in_names",
+                "source_folder": "folder_with_multiple_files",
+                "expected_value": ['folder_with_multiple_files/folder/file-EMPIAR-someting.tif']
+            },
+            {
+                "tree_method": "find_with_date_names",
+                "source_folder": "folder_with_date_name_files",
+                "expected_value": [
+                    'folder_with_date_name_files/prefix-12312000-suffix.txt',
+                    'folder_with_date_name_files/prefix-2000:12:31-suffix.txt',
+                    'folder_with_date_name_files/prefix-31:December:2000-suffix.txt',
+                    'folder_with_date_name_files/prefix-31122000-suffix.txt',
+                    'folder_with_date_name_files/prefix-31-Dec-2000-suffix.txt',
+                    'folder_with_date_name_files/prefix-Dec-31-2000-suffix.txt',
+                    'folder_with_date_name_files/prefix-2000-12-31-suffix.txt',
+                    'folder_with_date_name_files/prefix-20001231-suffix.txt',
+                    'folder_with_date_name_files/prefix-001231-suffix.txt',
+                    'folder_with_date_name_files/prefix-31-December-2000-suffix.txt'
+                ]
+            },
+            {
+                "tree_method": "find_directories_with_mixed_files",
+                "source_folder": "folder_with_multiple_file_types",
+                "expected_value": ['folder_with_multiple_file_types/folder/']
+            },
+            {
+                "tree_method": "find_long_names",
+                "source_folder": "folder_with_long_name_folders",
+                "expected_value": [
+                    'folder_with_long_name_folders',
+                    'folder_with_long_name_folders/a folder with & funny symbols in the ?? name',
+                    'folder_with_long_name_folders/a folder with spaces in the name',
+                    'folder_with_long_name_folders/a_folder_with_a_very_long_name_that_we_cannot_even_begin_to_comprehend',
+                    'folder_with_long_name_folders/folder/inner_folder/another_very_long_name_that_we_are_still_wondering_'
+                    'ever_found_the_light_of_day'
+                ]
+            },
+            {
+                "tree_method": "find_excessive_files_per_directory",
+                "source_folder": "folder_with_multiple_folders",
+                "expected_value": [f'folder_with_multiple_folders/folder{i}/' for i in range(1, 6)]
+            },
+            {
+                "tree_method": "find_obvious_directories",
+                "source_folder": "single_empty_folder",
+                "expected_value": ['single_empty_folder/folder', 'single_empty_folder/folder/inner_folder']
+            },
+            {
+                "tree_method": "find_obvious_directories",
+                "source_folder": "folder_with_multiple_file_types",
+                "expected_value": [
+                    'folder_with_multiple_file_types/folder',
+                    'folder_with_multiple_file_types/folder/files',
+                    'folder_with_multiple_file_types/folder/inner_folder'
+                ]
+            },
+            {
+                "tree_method": "find_empty_directories",
+                "source_folder": "single_empty_folder",
+                "expected_value": [
+                    'single_empty_folder',
+                    'single_empty_folder/folder',
+                    'single_empty_folder/folder/inner_folder'
+                ]
+            },
+            {
+                "tree_method": "find_empty_directories",
+                "source_folder": "single_empty_folder",
+                "expected_value": [
+                    'single_empty_folder/folder',
+                    'single_empty_folder/folder/inner_folder'
+                ],
+                "kwargs": {"include_root": False}
+            },
+            {
+                "tree_method": "find_empty_directories",
+                "source_folder": "empty_folder",
+                "expected_value": ['empty_folder', 'empty_folder/folder'],
+            },
+            {
+                "tree_method": "find_empty_directories",
+                "source_folder": "folder_with_multiple_folders",
+                "expected_value": [],
+            },
+            {
+                "tree_method": "find_empty_directories",
+                "source_folder": "folder_with_multiple_folders",
+                "expected_value": [],
+                "kwargs": {"include_root": False}
+            },
+            {
+                "tree_method": "find_empty_directories",
+                "source_folder": "folder_with_multiple_file_types",
+                "expected_value": [
+                    'folder_with_multiple_file_types',
+                    'folder_with_multiple_file_types/folder/files',
+                    'folder_with_multiple_file_types/folder/inner_folder'
+                ],
+            },
+            {
+                "tree_method": "find_empty_directories",
+                "source_folder": "folder_with_multiple_file_types",
+                "expected_value": [
+                    'folder_with_multiple_file_types/folder/files',
+                    'folder_with_multiple_file_types/folder/inner_folder'
+                ],
+                "kwargs": {"include_root": False}
+            },
+        ]
+        for data_dict in data:
+            dir_entries = utils.scandir_recursive(TEST_DATA / data_dict["source_folder"])
+            tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
+            if "kwargs" in data_dict:
+                result = sorted(
+                    getattr(
+                        tree,
+                        data_dict["tree_method"]
+                    )(**data_dict["kwargs"])
+                )
+            else:
+                result = sorted(getattr(tree, data_dict["tree_method"])())
+            self.assertEqual(sorted(data_dict["expected_value"]), result)
 
-    def test_find_long_names(self):
-        """Test we can find long names"""
-        dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_long_name_folders")
-        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertListEqual(
-            sorted([
-                'folder_with_long_name_folders',
-                'folder_with_long_name_folders/a folder with & funny symbols in the ?? name',
-                'folder_with_long_name_folders/a folder with spaces in the name',
-                'folder_with_long_name_folders/a_folder_with_a_very_long_name_that_we_cannot_even_begin_to_comprehend',
-                'folder_with_long_name_folders/folder/inner_folder/another_very_long_name_that_we_are_still_wondering_'
-                'ever_found_the_light_of_day'
-            ]),
-            sorted(tree.find_long_names())
-        )
-
-    def test_find_directories_with_mixed_files(self):
-        """Test that we can find dirs with mixed files"""
-        dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_file_types/")
-        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        print(tree.find_directories_with_mixed_files())
-        self.assertListEqual(
-            sorted([
-                'folder_with_multiple_file_types/folder/'
-            ]),
-            sorted(tree.find_directories_with_mixed_files())
-        )
-
-    def test_find_with_date_names(self):
-        """Test that we can find dates in names"""
-        dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_date_name_files/")
-        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertListEqual(
-            sorted([
-                'folder_with_date_name_files/prefix-12312000-suffix.txt',
-                'folder_with_date_name_files/prefix-2000:12:31-suffix.txt',
-                'folder_with_date_name_files/prefix-31:December:2000-suffix.txt',
-                'folder_with_date_name_files/prefix-31122000-suffix.txt',
-                'folder_with_date_name_files/prefix-31-Dec-2000-suffix.txt',
-                'folder_with_date_name_files/prefix-Dec-31-2000-suffix.txt',
-                'folder_with_date_name_files/prefix-2000-12-31-suffix.txt',
-                'folder_with_date_name_files/prefix-20001231-suffix.txt',
-                'folder_with_date_name_files/prefix-001231-suffix.txt',
-                'folder_with_date_name_files/prefix-31-December-2000-suffix.txt'
-            ]),
-            sorted(tree.find_with_date_names())
-        )
-
-    def test_find_accessions_in_names(self):
-        """Test that we can spot accessions in names"""
-        dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_files/")
-        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertEqual(
-            ['folder_with_multiple_files/folder/file-EMPIAR-someting.tif'],
-            tree.find_accessions_in_names()
-        )
-
-    def test_find_mixed_case(self):
-        """Test that we can find mixed case"""
-        dir_entries = utils.scandir_recursive(TEST_DATA / "folder_with_multiple_files/")
-        tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
-        self.assertTrue(
-            'folder_with_multiple_files/folder/file-EMPIAR-someting.tif' in
-            tree.find_mixed_case()
-        )
 
 class TestAnalyse(Tests):
     def test_analyse_all_engines(self):
