@@ -58,6 +58,8 @@ class TestCLI(Tests):
         self.assertEqual('analyse', args.command)
         self.assertEqual(pathlib.Path('.'), args.path)
         self.assertFalse(args.include_root)
+        self.assertFalse(args.summarise)
+        self.assertEqual(5, args.summarise_size)
 
 
 class TestCore(Tests):

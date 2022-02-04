@@ -43,6 +43,18 @@ analyse_parser.add_argument('--include-root', default=False, action='store_true'
                             help="include the root directory for analysis [default: False]")
 _add_arg(analyse_parser, prefix)
 analyse_parser.add_argument('--show-tree', default=False, action='store_true', help="display the tree [default: False]")
+SUMMARY_SIZE = 5
+analyse_parser.add_argument(
+    '-s', '--summarise-size',
+    default=SUMMARY_SIZE, type=int,
+    help=f"summarise size [default: {SUMMARY_SIZE}]"
+)
+analyse_parser.add_argument(
+    '--summarise',
+    default=False,
+    action='store_true',
+    help=f"summarise to --summary-size ({SUMMARY_SIZE}) results in each group [default: False]"
+)
 
 # view
 view_parser = subparsers.add_parser(

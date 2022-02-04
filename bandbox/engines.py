@@ -33,17 +33,15 @@ import styled
 
 import bandbox
 
-# import threading # doesn't seem to be necessary
-
 width, height = shutil.get_terminal_size((80, 60))
 RIGHT_COL_WIDTH = 40
 LEFT_COL_WIDTH = width - RIGHT_COL_WIDTH - 1
 
 
-async def _report(dirs: list, rule_text: str, fail_text: str = '') -> None:
+async def _report(dirs: list, rule_text: str, fail_text: str = '', args=None) -> None:
     """Reporting function"""
-    # lock = threading.Lock()
-    # with lock:
+    summarise = getattr(args, 'summarise', False)
+    summarise_size = getattr(args, 'summarise_size', 5)
     print(styled.Styled(f"[[ '{rule_text.ljust(LEFT_COL_WIDTH)}'|bold ]]"), end=" ")
     if dirs:
         if fail_text:
@@ -51,8 +49,15 @@ async def _report(dirs: list, rule_text: str, fail_text: str = '') -> None:
         else:
             fail_text = f"[{len(dirs)} directories] nok".rjust(RIGHT_COL_WIDTH)
             print(styled.Styled(f"[[ '{fail_text}'|fg-red:bold ]]"))
-        for item in dirs:
+        if summarise:
+            dirs_ = dirs[:summarise_size]
+        else:
+            dirs_ = dirs
+        for item in dirs_:
             print(f"  * {item}")
+        if summarise:
+            print(f"  * [+{len(dirs) - summarise_size} others (remove --summarise option to view the full list)]")
+
     else:
         ok_text = "ok".rjust(RIGHT_COL_WIDTH)
         print(styled.Styled(f"[[ '{ok_text}'|fg-green:bold ]]"))
@@ -68,66 +73,67 @@ async def s2_detect_redundant_directories(tree, args):
     """
     # empty folders
     empty_folders = tree.find_empty_directories(include_root=args.include_root)
-    await _report(empty_folders, f"S2 - redundant directories...")
+    await _report(empty_folders, f"S2 - redundant directories...", args=args)
 
 
 async def s2_detect_obvious_directories(tree, args):
     """Detect obvious folders"""
     obvious_folders = tree.find_obvious_directories(include_root=args.include_root)
-    await _report(obvious_folders, f"S2 - obvious directory names...")
+    await _report(obvious_folders, f"S2 - obvious directory names...", args=args)
 
 
 async def s2_detect_excessive_files_per_directory(tree, args):
     """Detect excessive files per directory"""
     excess_files = tree.find_excessive_files_per_directory()
-    await _report(excess_files, f"S2 - excessives (>{bandbox.MAX_FILES}) files per directory...")
+    await _report(excess_files, f"S2 - excessives (>{bandbox.MAX_FILES}) files per directory...", args=args)
 
 
 async def s3_detect_directories_with_mixed_files(tree, args):
     """Detect folders with mixed files"""
     mixed_files = tree.find_directories_with_mixed_files()
-    await _report(mixed_files, f"S3 - directories with mixed files...")
+    await _report(mixed_files, f"S3 - directories with mixed files...", args=args)
 
 
 async def n2_detect_long_names(tree, args):
     """Detect entities with very long names"""
     # print(f"info: working on {tree} with {args}...")
     dirs = tree.find_long_names()
-    await _report(dirs, f"N2 - long names (>{bandbox.MAX_NAME_LENGTH} chars)...")
+    await _report(dirs, f"N2 - long names (>{bandbox.MAX_NAME_LENGTH} chars)...", args=args)
 
 
 async def n1_detect_dates_in_names(tree, args):
     """Detect dates of various formats in names"""
     dirs = tree.find_with_date_names()
-    await _report(dirs, f"N1 - entities with dates in names...")
+    await _report(dirs, f"N1 - entities with dates in names...", args=args)
 
 
 async def n1_detect_accessions_in_names(tree, args):
     """Detect accessions in names"""
     dirs = tree.find_accessions_in_names()
-    await _report(dirs, f"N1 - accessions in names...")
+    await _report(dirs, f"N1 - accessions in names...", args=args)
 
 
 async def n2_detect_mixed_case(tree, args):
     """Detect mixed case"""
     dirs = tree.find_mixed_case()
-    await _report(dirs, f"N2 - mixed case in names...")
+    await _report(dirs, f"N2 - mixed case in names...", args=args)
 
 
 async def n2_detect_odd_characets_in_names(tree, args):
     dirs = tree.find_odd_characters_in_names()
-    await _report(dirs, f"N2 - odd characters in names...")
+    await _report(dirs, f"N2 - odd characters in names...", args=args)
 
 
 async def n2_detect_excessive_periods_in_names(tree, args):
     dirs = tree.find_excessive_periods_in_names()
-    await _report(dirs, f"N2 - excessive periods in names...")
+    await _report(dirs, f"N2 - excessive periods in names...", args=args)
 
 
 async def n3_detect_external_references_in_names(tree, args):
     dirs = tree.find_external_references_in_names()
-    await _report(dirs, f"N3 - external references in names...")
+    await _report(dirs, f"N3 - external references in names...", args=args)
+
 
 async def m1_detect_unknown_file_extensions(tree, args):
     dirs = tree.find_unknown_file_extensions()
-    await _report(dirs, f"M1 - unknown file extensions...")
+    await _report(dirs, f"M1 - unknown file extensions...", args=args)
