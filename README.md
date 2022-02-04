@@ -2,6 +2,8 @@
 
 `bandbox` is a CLI tool to quickly evaluate how organised your dataset is. You can use `bandbox` on any directory and it will recursively descend through to all subdirectories to assess whether the structure and names are easy to use. `bandbox` reads in a set of constants from Github gist, which it uses to assess your dataset. Once complete, `bandbox` displays various assessments and whether they are `ok` or `nok`, together with details about which paths from the specified directory have failed that assessment. The use may also display the directory tree using the `--show-tree` option as well as summarise the output using the `--summarise` option which may be modified using the `--summarise-size` option. 
 
+Bear in mind that `bandbox` only makes suggestions on how to make your dataset more usable; you are in the best position to decide whether a `fail` is a real fail. It might help you discover unwanted files e.g. `log` files, temporary files such as `*.tif~`, operating system fluff like `.DS_Store` files on macOS etc.
+
 ## Viewing the tree
 
 Use the `view` command to view the tree implied by the dataset. 
@@ -71,7 +73,7 @@ Use the `analyse` command to run the assessments on your dataset. Here is an exa
 > In the results below, **N** indicates a _naming_ issue, **S** a _structural_ issue (the folder structure) and **M** are _miscellaneous_ issues (e.g. warnings about unknown file extensions). Scroll horizontally (Shift+Scroll) to see the number of issues in each category.
 
 ```shell
-$ bandbox analyse test_data --show-tree --summarise
+~$ bandbox analyse test_data --show-tree --summarise
 info: successfully retrieved up-to-date data...
 └── test_data
         └── folder_with_multiple_folders
@@ -192,4 +194,25 @@ S3 - directories with mixed files...                                            
   * test_data/folder_with_multiple_file_types/folder/
   * test_data/folder_with_long_name_folders/folder/
 
+```
+
+## Updating the settings
+When analysing a tree, `bandbox` reads data from https://gist.github.com/paulkorir/5b71f57f7a29391f130e53c24a2db3fb/raw/bandbox.json. This data is public and subject to revision. If you would like to expand a particular criterion for analysis please fork the gist, for the repo, test then send a PR for it to be included. Eventually, this will be simplified by using a CLI option. 
+
+### Current settings
+
+```json
+{
+  "file_formats": "jpg|jpeg|mrc|mrcs|tif|tiff|dm4|txt|box|cfg|fixed|st|rec|map|bak|eer|bz2|gz|zip|xml|am|star|raw|dat",
+  "obvious_files": "images|directory",
+  "max_files": 2000,
+  "max_name_length": 50,
+  "date_infix_chars": "=",
+  "month_chars": "",
+  "date_re": [],
+  "accession_names": "EMDB|EMPIAR|BIOSTUDIES",
+  "odd_chars": "&?! %^*@£$#(){}",
+  "max_periods_in_name": 1,
+  "external_refs": "figure|supplementary"
+}
 ```

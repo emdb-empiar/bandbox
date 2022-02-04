@@ -1,6 +1,7 @@
 import os
 import sys
 
+import bandbox
 from bandbox import managers
 from bandbox.cli import parse_args
 

@@ -18,6 +18,7 @@ import unittest
 
 import requests
 
+import bandbox
 from bandbox import cli, core, utils, managers
 
 BASE_DIR = pathlib.Path("/Users/pkorir/PycharmProjects/bandbox")
@@ -112,144 +113,140 @@ class TestCore(Tests):
         - a tree instance (created on the fly)
         """
         data = [
-            # {
-            #     "tree_method": "find_mixed_case",
-            #     "source_folder": "folder_with_multiple_files",
-            #     "expected_value": ['folder_with_multiple_files/folder/file-EMPIAR-someting.tif']
-            # },
-            # {
-            #     "tree_method": "find_accessions_in_names",
-            #     "source_folder": "folder_with_multiple_files",
-            #     "expected_value": ['folder_with_multiple_files/folder/file-EMPIAR-someting.tif']
-            # },
-            # {
-            #     "tree_method": "find_with_date_names",
-            #     "source_folder": "folder_with_date_name_files",
-            #     "expected_value": [
-            #         'folder_with_date_name_files/prefix-12312000-suffix.txt',
-            #         'folder_with_date_name_files/prefix-2000:12:31-suffix.txt',
-            #         'folder_with_date_name_files/prefix-31:December:2000-suffix.txt',
-            #         'folder_with_date_name_files/prefix-31122000-suffix.txt',
-            #         'folder_with_date_name_files/prefix-31-Dec-2000-suffix.txt',
-            #         'folder_with_date_name_files/prefix-Dec-31-2000-suffix.txt',
-            #         'folder_with_date_name_files/prefix-2000-12-31-suffix.txt',
-            #         'folder_with_date_name_files/prefix-20001231-suffix.txt',
-            #         'folder_with_date_name_files/prefix-001231-suffix.txt',
-            #         'folder_with_date_name_files/prefix-31-December-2000-suffix.txt'
-            #     ]
-            # },
-            # {
-            #     "tree_method": "find_directories_with_mixed_files",
-            #     "source_folder": "folder_with_multiple_file_types",
-            #     "expected_value": ['folder_with_multiple_file_types/folder/']
-            # },
-            # {
-            #     "tree_method": "find_long_names",
-            #     "source_folder": "folder_with_long_name_folders",
-            #     "expected_value": [
-            #         'folder_with_long_name_folders',
-            #         'folder_with_long_name_folders/a folder with & funny symbols in the ?? name',
-            #         'folder_with_long_name_folders/a folder with spaces in the name',
-            #         'folder_with_long_name_folders/a_folder_with_a_very_long_name_that_we_cannot_even_begin_to_comprehend',
-            #         'folder_with_long_name_folders/folder/inner_folder/another_very_long_name_that_we_are_still_wondering_'
-            #         'ever_found_the_light_of_day'
-            #     ]
-            # },
+            {
+                "tree_method": "find_mixed_case",
+                "source_folder": "folder_with_multiple_files",
+                "expected_value": ['folder_with_multiple_files/folder/file-EMPIAR-someting.tif']
+            },
+            {
+                "tree_method": "find_accessions_in_names",
+                "source_folder": "folder_with_multiple_files",
+                "expected_value": ['folder_with_multiple_files/folder/file-EMPIAR-someting.tif']
+            },
+            {
+                "tree_method": "find_with_date_names",
+                "source_folder": "folder_with_date_name_files",
+                "expected_value": [
+                    'folder_with_date_name_files/prefix-12312000-suffix.txt',
+                    'folder_with_date_name_files/prefix-2000:12:31-suffix.txt',
+                    'folder_with_date_name_files/prefix-31:December:2000-suffix.txt',
+                    'folder_with_date_name_files/prefix-31122000-suffix.txt',
+                    'folder_with_date_name_files/prefix-31-Dec-2000-suffix.txt',
+                    'folder_with_date_name_files/prefix-Dec-31-2000-suffix.txt',
+                    'folder_with_date_name_files/prefix-2000-12-31-suffix.txt',
+                    'folder_with_date_name_files/prefix-20001231-suffix.txt',
+                    'folder_with_date_name_files/prefix-001231-suffix.txt',
+                    'folder_with_date_name_files/prefix-31-December-2000-suffix.txt'
+                ]
+            },
+            {
+                "tree_method": "find_directories_with_mixed_files",
+                "source_folder": "folder_with_multiple_file_types",
+                "expected_value": ['folder_with_multiple_file_types/folder/']
+            },
+            {
+                "tree_method": "find_long_names",
+                "source_folder": "folder_with_long_name_folders",
+                "expected_value": [
+                    'folder_with_long_name_folders/a_folder_with_a_very_long_name_that_we_cannot_even_begin_to_comprehend',
+                    'folder_with_long_name_folders/folder/inner_folder/another_very_long_name_that_we_are_still_wondering_ever_found_the_light_of_day'
+                ]
+            },
             # {
             #     "tree_method": "find_excessive_files_per_directory",
             #     "source_folder": "folder_with_multiple_folders",
-            #     "expected_value": [f'folder_with_multiple_folders/folder{i}/' for i in range(1, 6)]
+            #     "expected_value": [f'folder_with_multiple_folders/folder7/file{i}.jpeg' for i in range(1, 2001)]
             # },
-            # {
-            #     "tree_method": "find_obvious_directories",
-            #     "source_folder": "single_empty_folder",
-            #     "expected_value": ['single_empty_folder/folder', 'single_empty_folder/folder/inner_folder']
-            # },
-            # {
-            #     "tree_method": "find_obvious_directories",
-            #     "source_folder": "folder_with_multiple_file_types",
-            #     "expected_value": [
-            #         'folder_with_multiple_file_types/folder',
-            #         'folder_with_multiple_file_types/folder/files',
-            #         'folder_with_multiple_file_types/folder/inner_folder'
-            #     ]
-            # },
-            # {
-            #     "tree_method": "find_empty_directories",
-            #     "source_folder": "single_empty_folder",
-            #     "expected_value": [
-            #         'single_empty_folder',
-            #         'single_empty_folder/folder',
-            #         'single_empty_folder/folder/inner_folder'
-            #     ]
-            # },
-            # {
-            #     "tree_method": "find_empty_directories",
-            #     "source_folder": "single_empty_folder",
-            #     "expected_value": [
-            #         'single_empty_folder/folder',
-            #         'single_empty_folder/folder/inner_folder'
-            #     ],
-            #     "kwargs": {"include_root": False}
-            # },
-            # {
-            #     "tree_method": "find_empty_directories",
-            #     "source_folder": "empty_folder",
-            #     "expected_value": ['empty_folder', 'empty_folder/folder'],
-            # },
-            # {
-            #     "tree_method": "find_empty_directories",
-            #     "source_folder": "folder_with_multiple_folders",
-            #     "expected_value": [],
-            # },
-            # {
-            #     "tree_method": "find_empty_directories",
-            #     "source_folder": "folder_with_multiple_folders",
-            #     "expected_value": [],
-            #     "kwargs": {"include_root": False}
-            # },
-            # {
-            #     "tree_method": "find_empty_directories",
-            #     "source_folder": "folder_with_multiple_file_types",
-            #     "expected_value": [
-            #         'folder_with_multiple_file_types',
-            #         'folder_with_multiple_file_types/folder/files',
-            #         'folder_with_multiple_file_types/folder/inner_folder'
-            #     ],
-            # },
-            # {
-            #     "tree_method": "find_empty_directories",
-            #     "source_folder": "folder_with_multiple_file_types",
-            #     "expected_value": [
-            #         'folder_with_multiple_file_types/folder/files',
-            #         'folder_with_multiple_file_types/folder/inner_folder'
-            #     ],
-            #     "kwargs": {"include_root": False}
-            # },
-            # {
-            #     "tree_method": "find_odd_characters_in_names",
-            #     "source_folder": "folder_with_long_name_folders",
-            #     "expected_value": [
-            #         'folder_with_long_name_folders/a folder with & funny symbols in the ?? name',
-            #         'folder_with_long_name_folders/a folder with spaces in the name'
-            #     ],
-            # },
-            # {
-            #     "tree_method": "find_excessive_periods_in_names",
-            #     "source_folder": "folder_with_long_name_folders",
-            #     "expected_value": [
-            #         'folder_with_long_name_folders/a.folder.with.periods.in.the.name',
-            #         'folder_with_long_name_folders/folder/a.file.with.many.periods.txt'
-            #     ],
-            # },
-            # {
-            #     "tree_method": "find_external_references_in_names",
-            #     "source_folder": "folder_with_long_name_folders",
-            #     "expected_value": [
-            #         'folder_with_long_name_folders/folder/figure5.jpg',
-            #         'folder_with_long_name_folders/folder/supplementary-figure3a.jpg',
-            #     ],
-            # },
+            {
+                "tree_method": "find_obvious_directories",
+                "source_folder": "single_empty_folder",
+                "expected_value": ['single_empty_folder/folder', 'single_empty_folder/folder/inner_folder']
+            },
+            {
+                "tree_method": "find_obvious_directories",
+                "source_folder": "folder_with_multiple_file_types",
+                "expected_value": [
+                    'folder_with_multiple_file_types/folder',
+                    'folder_with_multiple_file_types/folder/files',
+                    'folder_with_multiple_file_types/folder/inner_folder'
+                ]
+            },
+            {
+                "tree_method": "find_empty_directories",
+                "source_folder": "single_empty_folder",
+                "expected_value": [
+                    'single_empty_folder',
+                    'single_empty_folder/folder',
+                    'single_empty_folder/folder/inner_folder'
+                ]
+            },
+            {
+                "tree_method": "find_empty_directories",
+                "source_folder": "single_empty_folder",
+                "expected_value": [
+                    'single_empty_folder/folder',
+                    'single_empty_folder/folder/inner_folder'
+                ],
+                "kwargs": {"include_root": False}
+            },
+            {
+                "tree_method": "find_empty_directories",
+                "source_folder": "empty_folder",
+                "expected_value": ['empty_folder', 'empty_folder/folder'],
+            },
+            {
+                "tree_method": "find_empty_directories",
+                "source_folder": "folder_with_multiple_folders",
+                "expected_value": [],
+            },
+            {
+                "tree_method": "find_empty_directories",
+                "source_folder": "folder_with_multiple_folders",
+                "expected_value": [],
+                "kwargs": {"include_root": False}
+            },
+            {
+                "tree_method": "find_empty_directories",
+                "source_folder": "folder_with_multiple_file_types",
+                "expected_value": [
+                    'folder_with_multiple_file_types',
+                    'folder_with_multiple_file_types/folder/files',
+                    'folder_with_multiple_file_types/folder/inner_folder'
+                ],
+            },
+            {
+                "tree_method": "find_empty_directories",
+                "source_folder": "folder_with_multiple_file_types",
+                "expected_value": [
+                    'folder_with_multiple_file_types/folder/files',
+                    'folder_with_multiple_file_types/folder/inner_folder'
+                ],
+                "kwargs": {"include_root": False}
+            },
+            {
+                "tree_method": "find_odd_characters_in_names",
+                "source_folder": "folder_with_long_name_folders",
+                "expected_value": [
+                    'folder_with_long_name_folders/a folder with & funny symbols in the ?? name',
+                    'folder_with_long_name_folders/a folder with spaces in the name'
+                ],
+            },
+            {
+                "tree_method": "find_excessive_periods_in_names",
+                "source_folder": "folder_with_long_name_folders",
+                "expected_value": [
+                    'folder_with_long_name_folders/a.folder.with.periods.in.the.name',
+                    'folder_with_long_name_folders/folder/a.file.with.many.periods.txt'
+                ],
+            },
+            {
+                "tree_method": "find_external_references_in_names",
+                "source_folder": "folder_with_long_name_folders",
+                "expected_value": [
+                    'folder_with_long_name_folders/folder/figure5.jpg',
+                    'folder_with_long_name_folders/folder/supplementary-figure3a.jpg',
+                ],
+            },
             {
                 "tree_method": "find_unknown_file_extensions",
                 "source_folder": "folder_with_long_name_folders",
@@ -273,6 +270,7 @@ class TestCore(Tests):
                 )
             else:
                 result = sorted(getattr(tree, data_dict["tree_method"])())
+            print(data_dict["tree_method"])
             self.assertEqual(sorted(data_dict["expected_value"]), result)
 
 
@@ -291,6 +289,10 @@ class TestUtils(Tests):
         self.assertIsInstance(path_generator, types.GeneratorType)
         for dir_entry in path_generator:
             print(dir_entry, dir_entry.path)
+
+    def test_get_gist_data(self):
+        """Test that we can get the gist data"""
+        bandbox.get_gist_data()
 
     # def test_scandir_recursive_filtering(self):
     #     """Test that we can exclude certain files"""
