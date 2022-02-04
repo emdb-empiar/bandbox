@@ -106,7 +106,7 @@ class Tree(UserDict):
         def empty_directories_predicate(dir_entry, children_dict, parent_dict, parent_path):
             output = list()
             if len(children_dict) == 0:  # terminal empty folder
-                output.append(f"{parent_path}{dir_entry}")
+                output.append(f"{parent_path}{dir_entry}/")
             if len(children_dict) == 1:  # non-terminal folder with files only
                 if "_files" not in children_dict and not isinstance(children_dict, list):
                     output.append(f"{parent_path}{dir_entry}/")
@@ -123,7 +123,7 @@ class Tree(UserDict):
         def obvious_directories_predicate(dir_entry, children_dict, parent_dict, parent_path):
             output = list()
             if bandbox.OBVIOUS_FILES_CRE.match(dir_entry):
-                output.append(f"{parent_path}{dir_entry}")
+                output.append(f"{parent_path}{dir_entry}/")
             return output
 
         obvious_directories = Tree.evaluate_predicate(self, obvious_directories_predicate)
@@ -152,7 +152,7 @@ class Tree(UserDict):
         def long_names_predicate(dir_entry, children_dict, parent_dict, parent_path):
             output = list()
             if len(dir_entry) > bandbox.MAX_NAME_LENGTH:
-                output.append(f"{parent_path}{dir_entry}")
+                output.append(f"{parent_path}{dir_entry}/")
             return output
 
         long_names = Tree.evaluate_predicate(self, long_names_predicate)
@@ -266,7 +266,7 @@ class Tree(UserDict):
         def unknown_file_extensions_predicate(dir_entry, children_dict, parent_dict, parent_path):
             output = list()
             if dir_entry == '_files':
-                for file in parent_dict['_files']:
+                for file in parenπt_dict['_files']:
                     if not bandbox.FILE_EXTENSION_CAPTURE_CRE.match(file):
                         output.append(f"{parent_path}{file}")
             return output
