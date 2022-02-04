@@ -49,7 +49,7 @@ async def _report(dirs: list, rule_text: str, fail_text: str = '', args=None) ->
         else:
             fail_text = f"[{len(dirs)} directories] nok".rjust(RIGHT_COL_WIDTH)
             print(styled.Styled(f"[[ '{fail_text}'|fg-red:bold ]]"))
-        if summarise:
+        if summarise and len(dirs) > summarise_size:
             dirs_ = dirs[:summarise_size]
         else:
             dirs_ = dirs
