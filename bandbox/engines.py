@@ -49,7 +49,7 @@ async def _report(dirs: list, rule_text: str, fail_text: str = '') -> None:
         if fail_text:
             print(styled.Styled(f"[[ '{fail_text.rjust(RIGHT_COL_WIDTH)}'|fg-red:bold ]]"))
         else:
-            fail_text = f"fail [{len(dirs)} directories]".rjust(RIGHT_COL_WIDTH)
+            fail_text = f"[{len(dirs)} directories] nok".rjust(RIGHT_COL_WIDTH)
             print(styled.Styled(f"[[ '{fail_text}'|fg-red:bold ]]"))
         for item in dirs:
             print(f"  * {item}")
