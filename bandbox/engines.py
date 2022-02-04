@@ -55,7 +55,7 @@ async def _report(dirs: list, rule_text: str, fail_text: str = '', args=None) ->
             dirs_ = dirs
         for item in dirs_:
             print(f"  * {item}")
-        if summarise:
+        if summarise and len(dirs) > summarise_size:
             print(f"  * [+{len(dirs) - summarise_size} others (remove --summarise option to view the full list)]")
 
     else:
