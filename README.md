@@ -68,6 +68,8 @@ info: successfully retrieved up-to-date data...
 
 Use the `analyse` command to run the assessments on your dataset. Here is an example output using the `--summarise` and `--show-tree` options:
 
+> In the results below, **N** indicates a _naming_ issue, **S** a _structural_ issue (the folder structure) and **M** are _miscellaneous_ issues (e.g. warnings about unknown file extensions). Scroll horizontally (Shift+Scroll) to see the number of issues in each category.
+
 ```shell
 $ bandbox analyse test_data --show-tree --summarise
 info: successfully retrieved up-to-date data...
