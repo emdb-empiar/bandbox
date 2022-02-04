@@ -18,8 +18,8 @@ quick wins
 - [DONE] detect words to avoid e.g. 'files', 'data' [N3.c]
 - detect missing padding [N3.e]
 - detect embedded paths (needs file format library) [N3.f]
-- detect unknown extensions [M1.a]
-- detect proprietary extensions [M1.b]
+- [DONE] detect unknown extensions [M1.a]
+- [DONE] detect proprietary extensions [M1.b]
 - detect presence of documentation e.g. README [M2.a]
 - detect presence of checksums [M3]
 - detect hard links

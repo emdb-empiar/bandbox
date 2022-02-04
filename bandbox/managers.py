@@ -25,7 +25,7 @@ def analyse(args):
     # e.g. n2_long_names -> list of entities with long names
     # entry point
     dir_entries = utils.scandir_recursive(args.path)
-    tree = Tree.from_data(dir_entries, prefix=str(args.prefix))
+    tree = Tree.from_data(dir_entries, prefix=str(args.prefix), show_file_counts=args.hide_file_counts)
     if args.show_tree:
         print(tree)
     if sys.version_info.minor > 6:  # 3.7+

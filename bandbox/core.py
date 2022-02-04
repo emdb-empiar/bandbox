@@ -21,7 +21,11 @@ class Tree(UserDict):
         return tree
 
     def insert(self, dir_entry: os.DirEntry, prefix: str = ''):
-        path_list = dir_entry.path[len(prefix):].strip(self.sep).split(self.sep)
+        """Insert the path into the tree creating nodes if necessary"""
+        if prefix == '.':
+            path_list = dir_entry.path.strip(self.sep).split(self.sep)
+        else:
+            path_list = dir_entry.path[len(prefix):].strip(self.sep).split(self.sep)
         # first, deal with directories
         insertion_point = self.data
         for element in path_list[:-1]:

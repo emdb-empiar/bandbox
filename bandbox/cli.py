@@ -4,6 +4,14 @@ import shlex
 import sys
 
 # options
+hide_file_counts = {
+    'args': ['--hide-file-counts'],
+    'kwargs': dict(
+        default=True,
+        action='store_false',
+        help="display file counts [default: True]"
+    )
+}
 path = {
     'args': ['path'],
     'kwargs': {
@@ -28,7 +36,7 @@ def _add_arg(parser_: argparse.ArgumentParser, option: dict):
     return parser_.add_argument(*option['args'], **option['kwargs'])
 
 
-parser = argparse.ArgumentParser(prog='bandbox', description="Diagnose disorganised data file/folders")
+parser = argparse.ArgumentParser(prog='bandbox', description="Evaluate how organised your dataset is")
 
 subparsers = parser.add_subparsers(dest='command', title='Commands available')
 
@@ -36,7 +44,7 @@ subparsers = parser.add_subparsers(dest='command', title='Commands available')
 analyse_parser = subparsers.add_parser(
     'analyse',
     description='analyse the data tree',
-    help='analyse the data tree',
+    help='analyse the dataset',
 )
 _add_arg(analyse_parser, path)
 analyse_parser.add_argument('--include-root', default=False, action='store_true',
@@ -55,6 +63,7 @@ analyse_parser.add_argument(
     action='store_true',
     help=f"summarise to --summary-size ({SUMMARY_SIZE}) results in each group [default: False]"
 )
+_add_arg(analyse_parser, hide_file_counts)
 
 # view
 view_parser = subparsers.add_parser(
@@ -67,13 +76,15 @@ _add_arg(view_parser, prefix)
 view_parser.add_argument('-v', '--verbose', default=False, action='store_true',
                          help="verbose output which will display all the directories found [default: False]")
 view_parser.add_argument('-f', '--input-file', help="input data from a file")
-view_parser.add_argument('--hide-file-counts', default=True, action='store_false',
-                         help="display file counts [default: True]")
+_add_arg(view_parser, hide_file_counts)
 
 
 def parse_args():
     """Parse CLI args"""
     args = parser.parse_args()
+    if args.command is None:
+        parser.print_help()
+        return None
     # the path must exist
     if not args.path.exists():
         print(f"error: invalid path '{args.path}'", file=sys.stderr)
