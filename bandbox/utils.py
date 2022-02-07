@@ -4,8 +4,7 @@ import typing
 import sys
 
 
-def scandir_recursive(path: pathlib.Path, recursive=True,
-                      exclude: typing.Union[None, list] = None) -> typing.Generator:
+def scandir_recursive(path: pathlib.Path, recursive=True) -> typing.Generator:
     """Recursively scan a directory
 
     Recursion can be switchef off

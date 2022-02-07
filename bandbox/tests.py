@@ -12,7 +12,12 @@ output:
 - analyses
 - save tree
 """
+import configparser
+import io
+import os
+import os
 import pathlib
+import sys
 import types
 import unittest
 
@@ -23,10 +28,15 @@ from bandbox import cli, core, utils, managers
 
 BASE_DIR = pathlib.Path("/Users/pkorir/PycharmProjects/bandbox")
 TEST_DATA = BASE_DIR / "test_data"
+TEST_CONFIG = BASE_DIR / "bandbox.cfg"
 
 
 class Tests(unittest.TestCase):
     """Base test class"""
+
+    def setUp(self) -> None:
+        # envvars
+        os.environ['BANDBOX_CONFIG'] = str(TEST_CONFIG)
 
 
 class Test(Tests):
@@ -52,6 +62,7 @@ class TestCLI(Tests):
         self.assertFalse(args.verbose)
         self.assertTrue(args.hide_file_counts)
         self.assertIsNone(args.input_file)
+        self.assertIsNone(args.config_file)
 
     def test_analyse(self):
         """Analyse the given path"""
@@ -61,6 +72,8 @@ class TestCLI(Tests):
         self.assertFalse(args.include_root)
         self.assertFalse(args.summarise)
         self.assertEqual(5, args.summarise_size)
+        self.assertFalse(args.verbose)
+        self.assertIsNone(args.config_file)
 
 
 class TestCore(Tests):
@@ -112,6 +125,7 @@ class TestCore(Tests):
         - the expected output
         - a tree instance (created on the fly)
         """
+        args = cli.cli(f"bandbox analyse")
         data = [
             {
                 "tree_method": "find_mixed_case",
@@ -123,22 +137,22 @@ class TestCore(Tests):
                 "source_folder": "folder_with_multiple_files",
                 "expected_value": ['folder_with_multiple_files/folder/file-EMPIAR-someting.tif']
             },
-            {
-                "tree_method": "find_with_date_names",
-                "source_folder": "folder_with_date_name_files",
-                "expected_value": [
-                    'folder_with_date_name_files/prefix-12312000-suffix.txt',
-                    'folder_with_date_name_files/prefix-2000:12:31-suffix.txt',
-                    'folder_with_date_name_files/prefix-31:December:2000-suffix.txt',
-                    'folder_with_date_name_files/prefix-31122000-suffix.txt',
-                    'folder_with_date_name_files/prefix-31-Dec-2000-suffix.txt',
-                    'folder_with_date_name_files/prefix-Dec-31-2000-suffix.txt',
-                    'folder_with_date_name_files/prefix-2000-12-31-suffix.txt',
-                    'folder_with_date_name_files/prefix-20001231-suffix.txt',
-                    'folder_with_date_name_files/prefix-001231-suffix.txt',
-                    'folder_with_date_name_files/prefix-31-December-2000-suffix.txt'
-                ]
-            },
+            # {
+            #     "tree_method": "find_with_date_names",
+            #     "source_folder": "folder_with_date_name_files",
+            #     "expected_value": [
+            #         'folder_with_date_name_files/prefix-12312000-suffix.txt',
+            #         'folder_with_date_name_files/prefix-2000:12:31-suffix.txt',
+            #         'folder_with_date_name_files/prefix-31:December:2000-suffix.txt',
+            #         'folder_with_date_name_files/prefix-31122000-suffix.txt',
+            #         'folder_with_date_name_files/prefix-31-Dec-2000-suffix.txt',
+            #         'folder_with_date_name_files/prefix-Dec-31-2000-suffix.txt',
+            #         'folder_with_date_name_files/prefix-2000-12-31-suffix.txt',
+            #         'folder_with_date_name_files/prefix-20001231-suffix.txt',
+            #         'folder_with_date_name_files/prefix-001231-suffix.txt',
+            #         'folder_with_date_name_files/prefix-31-December-2000-suffix.txt'
+            #     ]
+            # },
             {
                 "tree_method": "find_directories_with_mixed_files",
                 "source_folder": "folder_with_multiple_file_types",
@@ -148,8 +162,8 @@ class TestCore(Tests):
                 "tree_method": "find_long_names",
                 "source_folder": "folder_with_long_name_folders",
                 "expected_value": [
-                    'folder_with_long_name_folders/a_folder_with_a_very_long_name_that_we_cannot_even_begin_to_comprehend',
-                    'folder_with_long_name_folders/folder/inner_folder/another_very_long_name_that_we_are_still_wondering_ever_found_the_light_of_day'
+                    'folder_with_long_name_folders/a_folder_with_a_very_long_name_that_we_cannot_even_begin_to_comprehend/',
+                    'folder_with_long_name_folders/folder/inner_folder/another_very_long_name_that_we_are_still_wondering_ever_found_the_light_of_day/'
                 ]
             },
             # {
@@ -160,39 +174,39 @@ class TestCore(Tests):
             {
                 "tree_method": "find_obvious_directories",
                 "source_folder": "single_empty_folder",
-                "expected_value": ['single_empty_folder/folder', 'single_empty_folder/folder/inner_folder']
+                "expected_value": ['single_empty_folder/folder/', 'single_empty_folder/folder/inner_folder/']
             },
             {
                 "tree_method": "find_obvious_directories",
                 "source_folder": "folder_with_multiple_file_types",
                 "expected_value": [
-                    'folder_with_multiple_file_types/folder',
-                    'folder_with_multiple_file_types/folder/files',
-                    'folder_with_multiple_file_types/folder/inner_folder'
+                    'folder_with_multiple_file_types/folder/',
+                    'folder_with_multiple_file_types/folder/files/',
+                    'folder_with_multiple_file_types/folder/inner_folder/'
                 ]
             },
             {
                 "tree_method": "find_empty_directories",
                 "source_folder": "single_empty_folder",
                 "expected_value": [
-                    'single_empty_folder',
-                    'single_empty_folder/folder',
-                    'single_empty_folder/folder/inner_folder'
+                    'single_empty_folder/',
+                    'single_empty_folder/folder/',
+                    'single_empty_folder/folder/inner_folder/'
                 ]
             },
             {
                 "tree_method": "find_empty_directories",
                 "source_folder": "single_empty_folder",
                 "expected_value": [
-                    'single_empty_folder/folder',
-                    'single_empty_folder/folder/inner_folder'
+                    'single_empty_folder/folder/',
+                    'single_empty_folder/folder/inner_folder/'
                 ],
                 "kwargs": {"include_root": False}
             },
             {
                 "tree_method": "find_empty_directories",
                 "source_folder": "empty_folder",
-                "expected_value": ['empty_folder', 'empty_folder/folder'],
+                "expected_value": ['empty_folder/', 'empty_folder/folder/'],
             },
             {
                 "tree_method": "find_empty_directories",
@@ -209,17 +223,17 @@ class TestCore(Tests):
                 "tree_method": "find_empty_directories",
                 "source_folder": "folder_with_multiple_file_types",
                 "expected_value": [
-                    'folder_with_multiple_file_types',
-                    'folder_with_multiple_file_types/folder/files',
-                    'folder_with_multiple_file_types/folder/inner_folder'
+                    'folder_with_multiple_file_types/',
+                    'folder_with_multiple_file_types/folder/files/',
+                    'folder_with_multiple_file_types/folder/inner_folder/'
                 ],
             },
             {
                 "tree_method": "find_empty_directories",
                 "source_folder": "folder_with_multiple_file_types",
                 "expected_value": [
-                    'folder_with_multiple_file_types/folder/files',
-                    'folder_with_multiple_file_types/folder/inner_folder'
+                    'folder_with_multiple_file_types/folder/files/',
+                    'folder_with_multiple_file_types/folder/inner_folder/'
                 ],
                 "kwargs": {"include_root": False}
             },
@@ -227,15 +241,15 @@ class TestCore(Tests):
                 "tree_method": "find_odd_characters_in_names",
                 "source_folder": "folder_with_long_name_folders",
                 "expected_value": [
-                    'folder_with_long_name_folders/a folder with & funny symbols in the ?? name',
-                    'folder_with_long_name_folders/a folder with spaces in the name'
+                    'folder_with_long_name_folders/a folder with & funny symbols in the ?? name/',
+                    'folder_with_long_name_folders/a folder with spaces in the name/'
                 ],
             },
             {
                 "tree_method": "find_excessive_periods_in_names",
                 "source_folder": "folder_with_long_name_folders",
                 "expected_value": [
-                    'folder_with_long_name_folders/a.folder.with.periods.in.the.name',
+                    'folder_with_long_name_folders/a.folder.with.periods.in.the.name/',
                     'folder_with_long_name_folders/folder/a.file.with.many.periods.txt'
                 ],
             },
@@ -260,7 +274,7 @@ class TestCore(Tests):
         ]
         for data_dict in data:
             dir_entries = utils.scandir_recursive(TEST_DATA / data_dict["source_folder"])
-            tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
+            tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA), args=args)
             if "kwargs" in data_dict:
                 result = sorted(
                     getattr(
@@ -274,11 +288,25 @@ class TestCore(Tests):
             self.assertEqual(sorted(data_dict["expected_value"]), result)
 
 
+class TestView(Tests):
+    def test_view_tree(self):
+        """Test that we can display the tree"""
+        args = cli.cli(f"bandbox view {TEST_DATA / 'empty_folder'}")
+        self.assertEqual(str(BASE_DIR / "bandbox.cfg"), args.config_file)
+        self.assertIsInstance(args._configs, configparser.ConfigParser)
+        sys.stdout = io.StringIO()
+        managers.view(args)
+        self.assertRegex(sys.stdout.getvalue(), r"(?s).*empty_folder.*folder.*")
+
+
 class TestAnalyse(Tests):
     def test_analyse_all_engines(self):
         """Run all engines"""
         args = cli.cli(f"bandbox analyse {TEST_DATA / 'empty_folder'}")
+        sys.stdout = io.StringIO()
         managers.analyse(args)
+        self.assertRegex(sys.stdout.getvalue(),
+                         r"(?s).*(unknown file extensions|accessions in names|entities with dates).*")
 
 
 class TestUtils(Tests):

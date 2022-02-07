@@ -1,7 +1,11 @@
 import argparse
+import configparser
+import os
 import pathlib
 import shlex
 import sys
+import re
+from typing import Union, Iterable, Optional, List
 
 # options
 hide_file_counts = {
@@ -36,7 +40,70 @@ def _add_arg(parser_: argparse.ArgumentParser, option: dict):
     return parser_.add_argument(*option['args'], **option['kwargs'])
 
 
+class LocalConfigParser(configparser.ConfigParser):
+    """String-printable version"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            interpolation=configparser.ExtendedInterpolation(),
+            converters={
+                'list': self.getlist,
+                'tuple': self.gettuple,
+                'python': self.getpython,
+            }, *args, **kwargs)
+        self._filenames = None
+
+    @property
+    def filenames(self):
+        return self._filenames
+
+    def read(self, filenames: Union[os.PathLike, Iterable[os.PathLike]], encoding: Optional[str] = None) -> List[str]:
+        self._filenames = filenames
+        super().read(filenames, encoding)
+        self._process_derived_configs()
+
+    def _process_derived_configs(self):
+        self.set('bandbox', 'max_periods_in_name_cre', rf".*([.].*){{{str(self.getint('bandbox', 'max_periods_in_name') + 1)},}}.*")
+        self.set('bandbox', 'odd_chars_cre', rf".*[{self.get('bandbox', 'odd_chars')}].*")
+        self.set('bandbox', 'external_refs_cre', rf"^.*({self.get('bandbox', 'external_refs')}).*$$")
+        self.set('bandbox', 'obvious_files_cre', rf"^({self.get('bandbox', 'obvious_files')})$$")
+        self.set('bandbox', 'accession_names_cre', rf"^.*({self.get('bandbox', 'accession_names')}).*$$")
+        self.set('bandbox', 'file_cre', rf"^([^.]*\.[^.]*|.*\.({self.get('bandbox', 'file_extensions')}))$$")
+        self.set('bandbox', 'file_extension_capture_cre', rf".*\.(?P<ext>({self.get('bandbox', 'file_cre')}))$$")
+        # print(self.getpython('bandbox', 'date_re'))
+
+    def __str__(self):
+        string = ""
+        for section in self.sections():
+            string += f"[{section}]\n"
+            for option in self[section]:
+                string += f"{option} = {self.get(section, option, raw=True)}\n"
+            string += "\n"
+        return string
+
+    @staticmethod
+    def getlist(value):
+        """Convert the option value to a list"""
+        return list(map(lambda s: s.strip(), value.split(',')))
+
+    @staticmethod
+    def gettuple(value):
+        """Convert the option value to a tuple"""
+        return tuple(map(lambda s: s.strip(), value.split(',')))
+
+    @staticmethod
+    def getpython(value):
+        """Evaluate the option value as literal Python code"""
+        return eval(value)
+
+
 parser = argparse.ArgumentParser(prog='bandbox', description="Evaluate how organised your dataset is")
+
+parent_parser = argparse.ArgumentParser(add_help=False)
+parent_parser.add_argument('-c', '--config-file',
+                           help="oil configs [default: value of BANDBOX_CONFIG environment variable")
+parent_parser.add_argument('-v', '--verbose', default=False, action='store_true',
+                           help="verbose output to terminal in addition to log files [default: False]")
 
 subparsers = parser.add_subparsers(dest='command', title='Commands available')
 
@@ -45,12 +112,14 @@ analyse_parser = subparsers.add_parser(
     'analyse',
     description='analyse the data tree',
     help='analyse the dataset',
+    parents=[parent_parser]
 )
 _add_arg(analyse_parser, path)
 analyse_parser.add_argument('--include-root', default=False, action='store_true',
                             help="include the root directory for analysis [default: False]")
 _add_arg(analyse_parser, prefix)
-analyse_parser.add_argument('-T', '--show-tree', default=False, action='store_true', help="display the tree [default: False]")
+analyse_parser.add_argument('-T', '--show-tree', default=False, action='store_true',
+                            help="display the tree [default: False]")
 SUMMARY_SIZE = 5
 analyse_parser.add_argument(
     '-s', '--summarise-size',
@@ -69,12 +138,14 @@ _add_arg(analyse_parser, hide_file_counts)
 view_parser = subparsers.add_parser(
     'view',
     description='display the data tree',
-    help='display the data tree'
+    help='display the data tree',
+    parents=[parent_parser]
 )
 _add_arg(view_parser, path)
 _add_arg(view_parser, prefix)
-view_parser.add_argument('-v', '--verbose', default=False, action='store_true',
-                         help="verbose output which will display all the directories found [default: False]")
+# todo: remove
+# view_parser.add_argument('-v', '--verbose', default=False, action='store_true',
+#                          help="verbose output which will display all the directories found [default: False]")
 view_parser.add_argument('-f', '--input-file', help="input data from a file")
 _add_arg(view_parser, hide_file_counts)
 
@@ -85,6 +156,18 @@ def parse_args():
     if args.command is None:
         parser.print_help()
         return None
+    # config-file
+    if args.config_file is None:
+        try:
+            args.config_file = os.environ['BANDBOX_CONFIG']
+        except KeyError:
+            print(f"error: no configs found; please set BANDBOX_CONFIG envvar or provide --config-file path",
+                  file=sys.stderr)
+            return None
+        # read configs
+        configs = LocalConfigParser()
+        configs.read(args.config_file)
+        args._configs = configs
     # the path must exist
     if not args.path.exists():
         print(f"error: invalid path '{args.path}'", file=sys.stderr)

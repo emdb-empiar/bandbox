@@ -13,8 +13,10 @@ class Tree(UserDict):
         return super().__new__(cls)
 
     @classmethod
-    def from_data(cls, data, prefix="", show_file_counts=True):
+    def from_data(cls, data, prefix="", show_file_counts=True, args=None):
         tree = cls()
+        tree._args = args
+        tree._configs = args._configs
         tree.show_file_counts = show_file_counts
         for t in data:
             tree.insert(t, prefix=prefix)
@@ -43,11 +45,11 @@ class Tree(UserDict):
         else:
             insertion_point[path_list[-1]] = dict()
 
-    @staticmethod
-    def file_counts(file_list):
+    # @staticmethod
+    def file_counts(self, file_list):
         file_counts = dict()
         for file_ in file_list:
-            file_match = bandbox.FILE_CRE.match(file_)
+            file_match = re.match(self._configs.get('bandbox', 'file_cre'), file_, re.IGNORECASE)
             if file_match:
                 ext = file_.split('.')[-1]
                 if ext not in file_counts:
@@ -122,7 +124,7 @@ class Tree(UserDict):
 
         def obvious_directories_predicate(dir_entry, children_dict, parent_dict, parent_path):
             output = list()
-            if bandbox.OBVIOUS_FILES_CRE.match(dir_entry):
+            if re.match(self._configs.get('bandbox', 'obvious_files_cre'), dir_entry, re.IGNORECASE):
                 output.append(f"{parent_path}{dir_entry}/")
             return output
 
@@ -135,7 +137,7 @@ class Tree(UserDict):
         def excessive_files_per_directory_predicate(dir_entry, children_dict, parent_dict, parent_path):
             output = list()
             if dir_entry == '_files':  # in parent_dict:
-                if len(parent_dict['_files']) > bandbox.MAX_FILES:
+                if len(parent_dict['_files']) > self._configs.getint('bandbox', 'max_files'):
                     # fixme: presentation logic bled in ---> remove
                     # dir_name = parent_path.ljust(LEFT_COL_WIDTH)
                     # num_files = f"[{len(parent_dict['_files'])} files]"
@@ -151,7 +153,7 @@ class Tree(UserDict):
 
         def long_names_predicate(dir_entry, children_dict, parent_dict, parent_path):
             output = list()
-            if len(dir_entry) > bandbox.MAX_NAME_LENGTH:
+            if len(dir_entry) > self._configs.getint('bandbox', 'max_name_length'):
                 output.append(f"{parent_path}{dir_entry}/")
             return output
 
@@ -162,7 +164,7 @@ class Tree(UserDict):
         def directories_with_mixed_files_predicate(dir_entry, children_dict, parent_dict, parent_path):
             output = list()
             if dir_entry == '_files':
-                files = Tree.file_counts(parent_dict['_files'])
+                files = self.file_counts(parent_dict['_files'])
                 if len(files) > 1:
                     output.append(f"{parent_path}")
             return output
@@ -170,26 +172,26 @@ class Tree(UserDict):
         mixed_dirs = Tree.evaluate_predicate(self, directories_with_mixed_files_predicate)
         return mixed_dirs
 
-    def find_with_date_names(self) -> list:
-
-        def date_names_predicate(dir_entry, children_dict, parent_dict, parent_path):
-            output = list()
-            if dir_entry == '_files':
-                for file in parent_dict['_files']:
-                    for date_cre in bandbox.DATE_CRE:
-                        if date_cre.match(file):
-                            output.append(f"{parent_path}{file}")
-            return output
-
-        date_names = list(set(Tree.evaluate_predicate(self, date_names_predicate)))
-        return date_names
+    # def find_with_date_names(self) -> list:
+    #
+    #     def date_names_predicate(dir_entry, children_dict, parent_dict, parent_path):
+    #         output = list()
+    #         if dir_entry == '_files':
+    #             for file in parent_dict['_files']:
+    #                 for date_cre in bandbox.DATE_CRE:
+    #                     if date_cre.match(file):
+    #                         output.append(f"{parent_path}{file}")
+    #         return output
+    #
+    #     date_names = list(set(Tree.evaluate_predicate(self, date_names_predicate)))
+    #     return date_names
 
     def find_accessions_in_names(self) -> list:
         def accessions_in_names_predicate(dir_entry, chidren_dict, parent_dict, parent_path):
             output = list()
             if dir_entry == '_files':
                 for file in parent_dict['_files']:
-                    if bandbox.ACCESSION_NAMES_CRE.match(file):
+                    if re.match(self._configs.get('bandbox', 'accession_names_cre'), file, re.IGNORECASE):
                         output.append(f"{parent_path}{file}")
             return output
 
@@ -220,9 +222,9 @@ class Tree(UserDict):
             output = list()
             if dir_entry == '_files':
                 for file in parent_dict['_files']:
-                    if bandbox.ODD_CHARS_CRE.match(file):
+                    if re.match(self._configs.get('bandbox', 'odd_chars_cre'), file):
                         output.append(f"{parent_path}{file}")
-            if bandbox.ODD_CHARS_CRE.match(dir_entry):
+            if re.match(self._configs.get('bandbox', 'odd_chars_cre'), dir_entry):
                 output.append(f"{parent_path}{dir_entry}/")
             return output
 
@@ -236,9 +238,9 @@ class Tree(UserDict):
             output = list()
             if dir_entry == '_files':
                 for file in parent_dict['_files']:
-                    if bandbox.MAX_PERIODS_IN_NAME_CRE.match(file):
+                    if re.match(self._configs.get('bandbox', 'max_periods_in_name_cre'), file):
                         output.append(f"{parent_path}{file}")
-            if bandbox.MAX_PERIODS_IN_NAME_CRE.match(dir_entry):
+            if re.match(self._configs.get('bandbox', 'max_periods_in_name_cre'), dir_entry):
                 output.append(f"{parent_path}{dir_entry}/")
             return output
 
@@ -252,9 +254,9 @@ class Tree(UserDict):
             output = list()
             if dir_entry == '_files':
                 for file in parent_dict['_files']:
-                    if bandbox.EXTERNAL_REFS_CRE.match(file):
+                    if re.match(self._configs.get('bandbox', 'external_refs_cre'), file, re.IGNORECASE):
                         output.append(f"{parent_path}{file}")
-            if bandbox.EXTERNAL_REFS_CRE.match(dir_entry):
+            if re.match(self._configs.get('bandbox', 'external_refs_cre'), dir_entry, re.IGNORECASE):
                 output.append(f"{parent_path}{dir_entry}/")
             return output
 
@@ -267,7 +269,7 @@ class Tree(UserDict):
             output = list()
             if dir_entry == '_files':
                 for file in parent_dict['_files']:
-                    if not bandbox.FILE_EXTENSION_CAPTURE_CRE.match(file):
+                    if not re.match(self._configs.get('bandbox', 'file_extension_capture_cre'), file, re.IGNORECASE):
                         output.append(f"{parent_path}{file}")
             return output
 

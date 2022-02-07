@@ -85,7 +85,7 @@ async def s2_detect_obvious_directories(tree, args):
 async def s2_detect_excessive_files_per_directory(tree, args):
     """Detect excessive files per directory"""
     excess_files = tree.find_excessive_files_per_directory()
-    await _report(excess_files, f"S2 - excessives (>{bandbox.MAX_FILES}) files per directory...", args=args)
+    await _report(excess_files, f"S2 - excessives (>{args._configs.getint('bandbox', 'max_files')}) files per directory...", args=args)
 
 
 async def s3_detect_directories_with_mixed_files(tree, args):
@@ -98,13 +98,13 @@ async def n2_detect_long_names(tree, args):
     """Detect entities with very long names"""
     # print(f"info: working on {tree} with {args}...")
     dirs = tree.find_long_names()
-    await _report(dirs, f"N2 - long names (>{bandbox.MAX_NAME_LENGTH} chars)...", args=args)
+    await _report(dirs, f"N2 - long names (>{args._configs.getint('bandbox', 'max_name_length')} chars)...", args=args)
 
 
-async def n1_detect_dates_in_names(tree, args):
-    """Detect dates of various formats in names"""
-    dirs = tree.find_with_date_names()
-    await _report(dirs, f"N1 - entities with dates in names...", args=args)
+# async def n1_detect_dates_in_names(tree, args):
+#     """Detect dates of various formats in names"""
+#     dirs = tree.find_with_date_names()
+#     await _report(dirs, f"N1 - entities with dates in names...", args=args)
 
 
 async def n1_detect_accessions_in_names(tree, args):
