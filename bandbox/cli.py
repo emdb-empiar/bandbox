@@ -158,7 +158,7 @@ def parse_args():
         except KeyError:
             print(f"error: no configs found; please set BANDBOX_CONFIG envvar or provide --config-file path",
                   file=sys.stderr)
-            print(f"info: copy and modify the config file from https://github.com/emdb-empiar/bandbox/bandbox.cfg", file=sys.stderr)
+            print(f"info: copy and modify the config file from https://raw.githubusercontent.com/emdb-empiar/bandbox/master/bandbox.cfg", file=sys.stderr)
             return None
     # read configs
     configs = LocalConfigParser()

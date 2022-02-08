@@ -1,8 +1,25 @@
 # `bandbox`
 
-`bandbox` is a CLI tool to quickly evaluate how organised your dataset is. You can use `bandbox` on any directory and it will recursively descend through to all subdirectories to assess whether the structure and names are easy to use. `bandbox` reads in a set of constants from Github gist, which it uses to assess your dataset. Once complete, `bandbox` displays various assessments and whether they are `ok` or `nok`, together with details about which paths from the specified directory have failed that assessment. The use may also display the directory tree using the `--show-tree` option as well as summarise the output using the `--summarise` option which may be modified using the `--summarise-size` option. 
+`bandbox` is a CLI tool to quickly evaluate how organised your dataset is. You can use `bandbox` on any directory and it will recursively descend through to all subdirectories to assess whether the structure and names are easy to use. `bandbox` reads in a set of configs a config file (`bandbox.cfg`), which it uses to assess your dataset. Once complete, `bandbox` displays various assessments and whether they are <span style='color: green'>`ok`</span> or <span style='color:red'>`nok`</span>, together with details about which paths from the specified directory have failed that assessment. The user may also display the directory tree using the `--show-tree` option as well as summarise the output using the `--summarise` option which may be modified using the `--summarise-size` option. 
 
-Bear in mind that `bandbox` only makes suggestions on how to make your dataset more usable; you are in the best position to decide whether a `fail` is a real fail. It might help you discover unwanted files e.g. `log` files, temporary files such as `*.tif~`, operating system fluff like `.DS_Store` files on macOS etc.
+## Installing `bandbox`
+
+Install from source into a virtualenv using:
+
+```shell
+~$ pip install git+https://github.com/emdb-empiar/bandbox
+```
+
+or from PyPI using:
+
+```shell
+~$ pip install bandbox
+```
+Here is example output run on EMPIAR-10002 data (using the path `10002/data` and `--prefix 10002/data`):
+
+![image](empiar_10002.png)
+
+> :bulb: **Tip**: Bear in mind that `bandbox` only makes suggestions on how to make your dataset more usable; you are in the best position to decide whether a `fail` is a real fail. It might help you discover unwanted files e.g. `log` files, temporary files such as `*.tif~`, operating system fluff like `.DS_Store` files on macOS etc.
 
 ## Viewing the tree
 
@@ -15,7 +32,7 @@ Use the `view` command to view the tree implied by the dataset.
 ~$ bandbox view some_path --hide-file-counts # only show file totals
 ```
 
-> Some options are experimental and incomplete e.g. `--input-file`, which takes the output of Python's `glob.glob(path, recursive=True)` function saved as a string.
+> :warning: **Warning**: Some options are experimental and incomplete e.g. `--input-file`, which takes the output of Python's `glob.glob(path, recursive=True)` function saved as a string.
 
 Here is an example based on the `test_data` directory in the git repository:
 
@@ -196,23 +213,43 @@ S3 - directories with mixed files...                                            
 
 ```
 
-## Updating the settings
-When analysing a tree, `bandbox` reads data from https://gist.github.com/paulkorir/5b71f57f7a29391f130e53c24a2db3fb/raw/bandbox.json. This data is public and subject to revision. If you would like to expand a particular criterion for analysis please fork the gist, for the repo, test then send a PR for it to be included. Eventually, this will be simplified by using a CLI option. 
+## Setting configs
+`bandbox` uses simple heuristics to analyse a dataset. These should be provided in a config file which may either be specified using the `BANDBOX_CONFIG` or `--config-file` option. Download and modify the template available at `https://raw.githubusercontent.com/emdb-empiar/bandbox/master/bandbox.cfg`.
 
-### Current settings
+Here is a summary (annotated) of the current configs:
 
-```json
-{
-  "file_formats": "jpg|jpeg|mrc|mrcs|tif|tiff|dm4|txt|box|cfg|fixed|st|rec|map|bak|eer|bz2|gz|zip|xml|am|star|raw|dat",
-  "obvious_files": "images|directory",
-  "max_files": 2000,
-  "max_name_length": 50,
-  "date_infix_chars": "=",
-  "month_chars": "",
-  "date_re": [],
-  "accession_names": "EMDB|EMPIAR|BIOSTUDIES",
-  "odd_chars": "&?! %^*@£$#(){}",
-  "max_periods_in_name": 1,
-  "external_refs": "figure|supplementary"
-}
+```ini
+[bandbox]
+file_extensions = jpg|jpeg|mrc|mrcs|tif|tiff|dm4|txt|box|cfg|fixed|st|rec|map|bak|eer|bz2|gz|zip|xml|am|star|raw|dat
+obvious_files = file|files|data|folder|inner_folder|images|directory
+# per directory
+max_files = 2000
+max_name_length = 50
+# date_infix_chars must start with '-'
+date_infix_chars = -:/.
+month_chars = jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|january|february|march|april|may|june|july|august|september|october|november|december
+accession_names = EMPIAR|EMDB
+odd_chars = &?! ,
+periods_in_name_fewer_than = 2
+external_refs = figure|supplementary
+
+[regex]
+file_re = (?i)^([^.]*\.[^.]*|.*\.(${bandbox:file_extensions}))$$
+file_extension_re = (?i)^.*\.(${bandbox:file_extensions})$$
+obvious_files_re = (?i)^(${bandbox:obvious_files})$$
+accession_names_re = (?i)^.*(${bandbox:accession_names}).*$$
+odd_chars_re = .*[${bandbox:odd_chars}].*
+periods_in_name_fewer_than_re = .*([.].*){${bandbox:periods_in_name_fewer_than},}.*
+external_refs_re = (?i)^.*(${bandbox:external_refs}).*$$
+# 12/31/2000 or 31/12/2000
+# 2000[]12[]31 or 2000[]31[]12
+# 31[]12[]00
+# 31[]Dec[]2000
+# Dec[]31[]2000
+date_re = (?i)^.*\d{2}[${bandbox:date_infix_chars}]*\d{2}[${bandbox:date_infix_chars}]*\d{4}.*$$,(?i)^.*\d{4}[${bandbox:date_infix_chars}]*\d{2}[${bandbox:date_infix_chars}]*\d{2}.*$$,(?i)^.*\d{2}[${bandbox:date_infix_chars}]*\d{2}[${bandbox:date_infix_chars}]*\d{2}.*$$,(?i)^.*\d{2}[${bandbox:date_infix_chars}]*(${bandbox:month_chars})[${bandbox:date_infix_chars}]*\d{4}.*$$,(?i)^.*\d{4}[${bandbox:date_infix_chars}]*(${bandbox:month_chars})[${bandbox:date_infix_chars}]*\d{2}.*$$
 ```
+
+## Interested in contributing?
+Do you have ideas on other heuristics that can be used to improve the organisation of your data? For example, wouldn't it be cool to infer folder names which are closely related but which have different spellings or typos e.g. `tomos`, `tomograms` and `Tomograms` in the same dataset probably refer to the same kind of data and could simply all be called `tomograms`. 
+
+Please get in touch then we can provide a step-by-step guide to do so. 

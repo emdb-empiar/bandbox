@@ -49,7 +49,7 @@ class Tree(UserDict):
     def file_counts(self, file_list):
         file_counts = dict()
         for file_ in file_list:
-            file_match = self._configs.getcre('regex', 'file_cre').match(file_)
+            file_match = self._configs.getcre('regex', 'file_re').match(file_)
             if file_match:
                 ext = file_.split('.')[-1]
                 if ext not in file_counts:
@@ -124,7 +124,7 @@ class Tree(UserDict):
 
         def obvious_directories_predicate(dir_entry, children_dict, parent_dict, parent_path):
             output = list()
-            if self._configs.getcre('regex', 'obvious_files_cre').match(dir_entry):
+            if self._configs.getcre('regex', 'obvious_files_re').match(dir_entry):
                 output.append(f"{parent_path}{dir_entry}/")
             return output
 
@@ -178,8 +178,8 @@ class Tree(UserDict):
             output = list()
             if dir_entry == '_files':
                 for file in parent_dict['_files']:
-                    for date_cre in map(lambda r: re.compile(r), self._configs.getlist('regex', 'date_re')):
-                        if date_cre.match(file):
+                    for date_re in map(lambda r: re.compile(r), self._configs.getlist('regex', 'date_re')):
+                        if date_re.match(file):
                             output.append(f"{parent_path}{file}")
             return output
 
@@ -191,7 +191,7 @@ class Tree(UserDict):
             output = list()
             if dir_entry == '_files':
                 for file in parent_dict['_files']:
-                    if self._configs.getcre('regex', 'accession_names_cre').match(file):
+                    if self._configs.getcre('regex', 'accession_names_re').match(file):
                         output.append(f"{parent_path}{file}")
             return output
 
@@ -222,9 +222,9 @@ class Tree(UserDict):
             output = list()
             if dir_entry == '_files':
                 for file in parent_dict['_files']:
-                    if self._configs.getcre('regex', 'odd_chars_cre').match(file):
+                    if self._configs.getcre('regex', 'odd_chars_re').match(file):
                         output.append(f"{parent_path}{file}")
-            if self._configs.getcre('regex', 'odd_chars_cre').match(dir_entry):
+            if self._configs.getcre('regex', 'odd_chars_re').match(dir_entry):
                 output.append(f"{parent_path}{dir_entry}/")
             return output
 
@@ -238,9 +238,9 @@ class Tree(UserDict):
             output = list()
             if dir_entry == '_files':
                 for file in parent_dict['_files']:
-                    if self._configs.getcre('regex', 'periods_in_name_fewer_than_cre').match(file):
+                    if self._configs.getcre('regex', 'periods_in_name_fewer_than_re').match(file):
                         output.append(f"{parent_path}{file}")
-            if self._configs.getcre('regex', 'periods_in_name_fewer_than_cre').match(dir_entry):
+            if self._configs.getcre('regex', 'periods_in_name_fewer_than_re').match(dir_entry):
                 output.append(f"{parent_path}{dir_entry}/")
             return output
 
@@ -254,9 +254,9 @@ class Tree(UserDict):
             output = list()
             if dir_entry == '_files':
                 for file in parent_dict['_files']:
-                    if self._configs.getcre('regex', 'external_refs_cre').match(file):
+                    if self._configs.getcre('regex', 'external_refs_re').match(file):
                         output.append(f"{parent_path}{file}")
-            if self._configs.getcre('regex', 'external_refs_cre').match(dir_entry):
+            if self._configs.getcre('regex', 'external_refs_re').match(dir_entry):
                 output.append(f"{parent_path}{dir_entry}/")
             return output
 
@@ -269,7 +269,7 @@ class Tree(UserDict):
             output = list()
             if dir_entry == '_files':
                 for file in parent_dict['_files']:
-                    if not self._configs.getcre('regex', 'file_extension_cre').match(file):
+                    if not self._configs.getcre('regex', 'file_extension_re').match(file):
                         output.append(f"{parent_path}{file}")
             return output
 

@@ -101,10 +101,10 @@ async def n2_detect_long_names(tree, args):
     await _report(dirs, f"N2 - long names (>{args._configs.getint('bandbox', 'max_name_length')} chars)...", args=args)
 
 
-# async def n1_detect_dates_in_names(tree, args):
-#     """Detect dates of various formats in names"""
-#     dirs = tree.find_with_date_names()
-#     await _report(dirs, f"N1 - entities with dates in names...", args=args)
+async def n1_detect_dates_in_names(tree, args):
+    """Detect dates of various formats in names"""
+    dirs = tree.find_with_date_names()
+    await _report(dirs, f"N1 - entities with dates in names...", args=args)
 
 
 async def n1_detect_accessions_in_names(tree, args):
