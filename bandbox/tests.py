@@ -62,7 +62,7 @@ class TestCLI(Tests):
         self.assertFalse(args.verbose)
         self.assertTrue(args.hide_file_counts)
         self.assertIsNone(args.input_file)
-        self.assertIsNone(args.config_file)
+        self.assertIsNotNone(args.config_file)
 
     def test_analyse(self):
         """Analyse the given path"""
@@ -73,7 +73,7 @@ class TestCLI(Tests):
         self.assertFalse(args.summarise)
         self.assertEqual(5, args.summarise_size)
         self.assertFalse(args.verbose)
-        self.assertIsNone(args.config_file)
+        self.assertIsNotNone(args.config_file)
 
 
 class TestCore(Tests):
@@ -89,6 +89,7 @@ class TestCore(Tests):
 
     def test_tree_insert(self):
         """Test inserting paths into the tree"""
+        args = cli.cli(f"bandbox view")
         expected_output = dict(
             empty_folder={'empty_folder': {'folder': {}}},
             folder_with_multiple_file_types={
@@ -109,7 +110,7 @@ class TestCore(Tests):
         )
         for data_name, data in expected_output.items():
             dir_entries = utils.scandir_recursive(TEST_DATA / data_name)
-            tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA))
+            tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA), args=args)
             # the best we can do is compare keys
             self.assertListEqual(list(data.keys()), list(tree.data.keys()))
 
@@ -137,22 +138,22 @@ class TestCore(Tests):
                 "source_folder": "folder_with_multiple_files",
                 "expected_value": ['folder_with_multiple_files/folder/file-EMPIAR-someting.tif']
             },
-            # {
-            #     "tree_method": "find_with_date_names",
-            #     "source_folder": "folder_with_date_name_files",
-            #     "expected_value": [
-            #         'folder_with_date_name_files/prefix-12312000-suffix.txt',
-            #         'folder_with_date_name_files/prefix-2000:12:31-suffix.txt',
-            #         'folder_with_date_name_files/prefix-31:December:2000-suffix.txt',
-            #         'folder_with_date_name_files/prefix-31122000-suffix.txt',
-            #         'folder_with_date_name_files/prefix-31-Dec-2000-suffix.txt',
-            #         'folder_with_date_name_files/prefix-Dec-31-2000-suffix.txt',
-            #         'folder_with_date_name_files/prefix-2000-12-31-suffix.txt',
-            #         'folder_with_date_name_files/prefix-20001231-suffix.txt',
-            #         'folder_with_date_name_files/prefix-001231-suffix.txt',
-            #         'folder_with_date_name_files/prefix-31-December-2000-suffix.txt'
-            #     ]
-            # },
+            {
+                "tree_method": "find_with_date_names",
+                "source_folder": "folder_with_date_name_files",
+                "expected_value": [
+                    'folder_with_date_name_files/prefix-12312000-suffix.txt',
+                    'folder_with_date_name_files/prefix-2000:12:31-suffix.txt',
+                    'folder_with_date_name_files/prefix-31:December:2000-suffix.txt',
+                    'folder_with_date_name_files/prefix-31122000-suffix.txt',
+                    'folder_with_date_name_files/prefix-31-Dec-2000-suffix.txt',
+                    'folder_with_date_name_files/prefix-Dec-31-2000-suffix.txt',
+                    'folder_with_date_name_files/prefix-2000-12-31-suffix.txt',
+                    'folder_with_date_name_files/prefix-20001231-suffix.txt',
+                    'folder_with_date_name_files/prefix-001231-suffix.txt',
+                    'folder_with_date_name_files/prefix-31-December-2000-suffix.txt'
+                ]
+            },
             {
                 "tree_method": "find_directories_with_mixed_files",
                 "source_folder": "folder_with_multiple_file_types",
@@ -166,11 +167,11 @@ class TestCore(Tests):
                     'folder_with_long_name_folders/folder/inner_folder/another_very_long_name_that_we_are_still_wondering_ever_found_the_light_of_day/'
                 ]
             },
-            # {
-            #     "tree_method": "find_excessive_files_per_directory",
-            #     "source_folder": "folder_with_multiple_folders",
-            #     "expected_value": [f'folder_with_multiple_folders/folder7/file{i}.jpeg' for i in range(1, 2001)]
-            # },
+            {
+                "tree_method": "find_excessive_files_per_directory",
+                "source_folder": "folder_with_multiple_folders",
+                "expected_value": [f'folder_with_multiple_folders/folder7/']
+            },
             {
                 "tree_method": "find_obvious_directories",
                 "source_folder": "single_empty_folder",
@@ -285,6 +286,8 @@ class TestCore(Tests):
             else:
                 result = sorted(getattr(tree, data_dict["tree_method"])())
             print(data_dict["tree_method"])
+            # print(result)
+            # print(data_dict['expected_value'])
             self.assertEqual(sorted(data_dict["expected_value"]), result)
 
 
@@ -318,14 +321,3 @@ class TestUtils(Tests):
         for dir_entry in path_generator:
             print(dir_entry, dir_entry.path)
 
-    def test_get_gist_data(self):
-        """Test that we can get the gist data"""
-        bandbox.get_gist_data()
-
-    # def test_scandir_recursive_filtering(self):
-    #     """Test that we can exclude certain files"""
-    #     test_dir = TEST_DATA / "folder_with_multiple_file_types"
-    #     exclusion_list = ['*.txt']
-    #     dir_entries = list(utils.scandir_recursive(test_dir, exclude=exclusion_list))
-    #     print(dir_entries)
-    #     self.assertTrue(False)

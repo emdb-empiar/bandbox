@@ -49,7 +49,7 @@ class Tree(UserDict):
     def file_counts(self, file_list):
         file_counts = dict()
         for file_ in file_list:
-            file_match = re.match(self._configs.get('bandbox', 'file_cre'), file_, re.IGNORECASE)
+            file_match = self._configs.getcre('regex', 'file_cre').match(file_)
             if file_match:
                 ext = file_.split('.')[-1]
                 if ext not in file_counts:
@@ -124,7 +124,7 @@ class Tree(UserDict):
 
         def obvious_directories_predicate(dir_entry, children_dict, parent_dict, parent_path):
             output = list()
-            if re.match(self._configs.get('bandbox', 'obvious_files_cre'), dir_entry, re.IGNORECASE):
+            if self._configs.getcre('regex', 'obvious_files_cre').match(dir_entry):
                 output.append(f"{parent_path}{dir_entry}/")
             return output
 
@@ -172,26 +172,26 @@ class Tree(UserDict):
         mixed_dirs = Tree.evaluate_predicate(self, directories_with_mixed_files_predicate)
         return mixed_dirs
 
-    # def find_with_date_names(self) -> list:
-    #
-    #     def date_names_predicate(dir_entry, children_dict, parent_dict, parent_path):
-    #         output = list()
-    #         if dir_entry == '_files':
-    #             for file in parent_dict['_files']:
-    #                 for date_cre in bandbox.DATE_CRE:
-    #                     if date_cre.match(file):
-    #                         output.append(f"{parent_path}{file}")
-    #         return output
-    #
-    #     date_names = list(set(Tree.evaluate_predicate(self, date_names_predicate)))
-    #     return date_names
+    def find_with_date_names(self) -> list:
+
+        def date_names_predicate(dir_entry, children_dict, parent_dict, parent_path):
+            output = list()
+            if dir_entry == '_files':
+                for file in parent_dict['_files']:
+                    for date_cre in map(lambda r: re.compile(r), self._configs.getlist('regex', 'date_re')):
+                        if date_cre.match(file):
+                            output.append(f"{parent_path}{file}")
+            return output
+
+        date_names = list(set(Tree.evaluate_predicate(self, date_names_predicate)))
+        return date_names
 
     def find_accessions_in_names(self) -> list:
         def accessions_in_names_predicate(dir_entry, chidren_dict, parent_dict, parent_path):
             output = list()
             if dir_entry == '_files':
                 for file in parent_dict['_files']:
-                    if re.match(self._configs.get('bandbox', 'accession_names_cre'), file, re.IGNORECASE):
+                    if self._configs.getcre('regex', 'accession_names_cre').match(file):
                         output.append(f"{parent_path}{file}")
             return output
 
@@ -222,9 +222,9 @@ class Tree(UserDict):
             output = list()
             if dir_entry == '_files':
                 for file in parent_dict['_files']:
-                    if re.match(self._configs.get('bandbox', 'odd_chars_cre'), file):
+                    if self._configs.getcre('regex', 'odd_chars_cre').match(file):
                         output.append(f"{parent_path}{file}")
-            if re.match(self._configs.get('bandbox', 'odd_chars_cre'), dir_entry):
+            if self._configs.getcre('regex', 'odd_chars_cre').match(dir_entry):
                 output.append(f"{parent_path}{dir_entry}/")
             return output
 
@@ -238,9 +238,9 @@ class Tree(UserDict):
             output = list()
             if dir_entry == '_files':
                 for file in parent_dict['_files']:
-                    if re.match(self._configs.get('bandbox', 'max_periods_in_name_cre'), file):
+                    if self._configs.getcre('regex', 'periods_in_name_fewer_than_cre').match(file):
                         output.append(f"{parent_path}{file}")
-            if re.match(self._configs.get('bandbox', 'max_periods_in_name_cre'), dir_entry):
+            if self._configs.getcre('regex', 'periods_in_name_fewer_than_cre').match(dir_entry):
                 output.append(f"{parent_path}{dir_entry}/")
             return output
 
@@ -254,9 +254,9 @@ class Tree(UserDict):
             output = list()
             if dir_entry == '_files':
                 for file in parent_dict['_files']:
-                    if re.match(self._configs.get('bandbox', 'external_refs_cre'), file, re.IGNORECASE):
+                    if self._configs.getcre('regex', 'external_refs_cre').match(file):
                         output.append(f"{parent_path}{file}")
-            if re.match(self._configs.get('bandbox', 'external_refs_cre'), dir_entry, re.IGNORECASE):
+            if self._configs.getcre('regex', 'external_refs_cre').match(dir_entry):
                 output.append(f"{parent_path}{dir_entry}/")
             return output
 
@@ -269,7 +269,7 @@ class Tree(UserDict):
             output = list()
             if dir_entry == '_files':
                 for file in parent_dict['_files']:
-                    if not re.match(self._configs.get('bandbox', 'file_extension_capture_cre'), file, re.IGNORECASE):
+                    if not self._configs.getcre('regex', 'file_extension_cre').match(file):
                         output.append(f"{parent_path}{file}")
             return output
 

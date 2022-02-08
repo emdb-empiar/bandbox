@@ -43,7 +43,7 @@ def view(args):
             data = f.read().strip().split(', ')
     else:
         data = utils.scandir_recursive(args.path)
-    tree = Tree.from_data(data, prefix=str(args.path.parent), show_file_counts=args.hide_file_counts)
+    tree = Tree.from_data(data, prefix=str(args.path.parent), show_file_counts=args.hide_file_counts, args=args)
     if args.verbose:
         print(f"info: displaying nested tree data...", file=sys.stderr)
         print(json.dumps(tree.data, indent=4), file=sys.stderr)

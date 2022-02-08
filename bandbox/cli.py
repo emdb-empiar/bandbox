@@ -4,7 +4,6 @@ import os
 import pathlib
 import shlex
 import sys
-import re
 from typing import Union, Iterable, Optional, List
 
 # options
@@ -50,6 +49,7 @@ class LocalConfigParser(configparser.ConfigParser):
                 'list': self.getlist,
                 'tuple': self.gettuple,
                 'python': self.getpython,
+                'cre': self.getcre,
             }, *args, **kwargs)
         self._filenames = None
 
@@ -57,20 +57,9 @@ class LocalConfigParser(configparser.ConfigParser):
     def filenames(self):
         return self._filenames
 
-    def read(self, filenames: Union[os.PathLike, Iterable[os.PathLike]], encoding: Optional[str] = None) -> List[str]:
+    def read(self, filenames: Union[os.PathLike, Iterable[os.PathLike]], encoding: Optional[str] = None) -> None:
         self._filenames = filenames
         super().read(filenames, encoding)
-        self._process_derived_configs()
-
-    def _process_derived_configs(self):
-        self.set('bandbox', 'max_periods_in_name_cre', rf".*([.].*){{{str(self.getint('bandbox', 'max_periods_in_name') + 1)},}}.*")
-        self.set('bandbox', 'odd_chars_cre', rf".*[{self.get('bandbox', 'odd_chars')}].*")
-        self.set('bandbox', 'external_refs_cre', rf"^.*({self.get('bandbox', 'external_refs')}).*$$")
-        self.set('bandbox', 'obvious_files_cre', rf"^({self.get('bandbox', 'obvious_files')})$$")
-        self.set('bandbox', 'accession_names_cre', rf"^.*({self.get('bandbox', 'accession_names')}).*$$")
-        self.set('bandbox', 'file_cre', rf"^([^.]*\.[^.]*|.*\.({self.get('bandbox', 'file_extensions')}))$$")
-        self.set('bandbox', 'file_extension_capture_cre', rf".*\.(?P<ext>({self.get('bandbox', 'file_cre')}))$$")
-        # print(self.getpython('bandbox', 'date_re'))
 
     def __str__(self):
         string = ""
@@ -95,6 +84,12 @@ class LocalConfigParser(configparser.ConfigParser):
     def getpython(value):
         """Evaluate the option value as literal Python code"""
         return eval(value)
+
+    @staticmethod
+    def getcre(value):
+        """Evaluate a compiled regular expression"""
+        import re
+        return re.compile(value)
 
 
 parser = argparse.ArgumentParser(prog='bandbox', description="Evaluate how organised your dataset is")
@@ -163,11 +158,12 @@ def parse_args():
         except KeyError:
             print(f"error: no configs found; please set BANDBOX_CONFIG envvar or provide --config-file path",
                   file=sys.stderr)
+            print(f"info: copy and modify the config file from https://github.com/emdb-empiar/bandbox/bandbox.cfg", file=sys.stderr)
             return None
-        # read configs
-        configs = LocalConfigParser()
-        configs.read(args.config_file)
-        args._configs = configs
+    # read configs
+    configs = LocalConfigParser()
+    configs.read(args.config_file)
+    args._configs = configs
     # the path must exist
     if not args.path.exists():
         print(f"error: invalid path '{args.path}'", file=sys.stderr)
