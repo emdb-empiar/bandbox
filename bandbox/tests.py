@@ -24,7 +24,7 @@ import unittest
 import requests
 
 import bandbox
-from bandbox import cli, core, utils, managers
+from bandbox import cli, models, utils, managers
 
 BASE_DIR = pathlib.Path("/Users/pkorir/PycharmProjects/bandbox")
 TEST_DATA = BASE_DIR / "test_data"
@@ -81,8 +81,8 @@ class TestCore(Tests):
 
     def test_tree_init(self):
         """Initialise a tree"""
-        tree = core.Tree()
-        self.assertIsInstance(tree, core.Tree)
+        tree = models.Tree()
+        self.assertIsInstance(tree, models.Tree)
         self.assertTrue(hasattr(tree, 'data'))  # as a UserDict subclass this is where the data sits
         self.assertTrue(hasattr(tree, 'sep'))
         self.assertTrue(hasattr(tree, 'show_file_counts'))
@@ -110,7 +110,7 @@ class TestCore(Tests):
         )
         for data_name, data in expected_output.items():
             dir_entries = utils.scandir_recursive(TEST_DATA / data_name)
-            tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA), args=args)
+            tree = models.Tree.from_data(dir_entries, prefix=str(TEST_DATA), args=args)
             # the best we can do is compare keys
             self.assertListEqual(list(data.keys()), list(tree.data.keys()))
 
@@ -275,7 +275,7 @@ class TestCore(Tests):
         ]
         for data_dict in data:
             dir_entries = utils.scandir_recursive(TEST_DATA / data_dict["source_folder"])
-            tree = core.Tree.from_data(dir_entries, prefix=str(TEST_DATA), args=args)
+            tree = models.Tree.from_data(dir_entries, prefix=str(TEST_DATA), args=args)
             if "kwargs" in data_dict:
                 result = sorted(
                     getattr(

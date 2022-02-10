@@ -3,7 +3,7 @@ import json
 import sys
 
 from bandbox import utils
-from bandbox.core import Tree
+from bandbox.models import Tree
 
 
 async def _analyse_engines(tree, args):
