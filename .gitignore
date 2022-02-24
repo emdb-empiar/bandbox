@@ -1,2 +1,9 @@
 /.coverage
 /raw_data.txt
+.idea
+.tox
+bandbox.egg-info
+__pycache__/*
+build
+dist
+*/__pycache__/*
