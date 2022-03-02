@@ -121,7 +121,7 @@ async def n2_detect_mixed_case(tree, args):
 
 async def n2_detect_odd_characets_in_names(tree, args):
     dirs = tree.find_odd_characters_in_names()
-    await _report(dirs, f"N2 - odd characters in names...", args=args)
+    await _report(dirs, f"N2 - odd characters [{args._configs.get('bandbox', 'odd_chars')}] in names...", args=args)
 
 
 async def n2_detect_excessive_periods_in_names(tree, args):
@@ -137,3 +137,8 @@ async def n3_detect_external_references_in_names(tree, args):
 async def m1_detect_unknown_file_extensions(tree, args):
     dirs = tree.find_unknown_file_extensions()
     await _report(dirs, f"M1 - unknown file extensions...", args=args)
+
+
+async def n2_detect_non_ascii_characters_in_names(tree, args):
+    dirs = tree.find_non_ascii_characters()
+    await _report(dirs, f"N2 - non-ascii characters in names...", args=args)

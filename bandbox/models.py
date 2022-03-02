@@ -275,3 +275,21 @@ class Tree(UserDict):
 
         unknown_exts = Tree.evaluate_predicate(self, unknown_file_extensions_predicate)
         return unknown_exts
+
+    def find_non_ascii_characters(self):
+        """Find files/folders with non-ascii characters
+
+        The heuristic is that if the length of the string is equal to utf-8-encoded byte string then it's ascii
+        """
+        def non_ascii_character_predicate(dir_entry, children_dict, parent_dict, parent_path):
+            output = list()
+            if dir_entry == '_files':
+                for file in parent_dict['_files']:
+                    if len(file) != len(file.encode('utf-8')):
+                        output.append(file)
+            if len(dir_entry) != len(dir_entry.encode('utf-8')):
+                output.append(dir_entry)
+            return output
+
+        non_ascii_characters = Tree.evaluate_predicate(self, non_ascii_character_predicate)
+        return non_ascii_characters

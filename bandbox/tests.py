@@ -15,7 +15,6 @@ output:
 import configparser
 import io
 import os
-import os
 import pathlib
 import sys
 import types
@@ -23,7 +22,6 @@ import unittest
 
 import requests
 
-import bandbox
 from bandbox import cli, models, utils, managers
 
 BASE_DIR = pathlib.Path("/Users/pkorir/PycharmProjects/bandbox")
@@ -179,6 +177,14 @@ class TestCore(Tests):
             },
             {
                 "tree_method": "find_obvious_directories",
+                "source_folder": "folder_with_non_ascii_characters",
+                "expected_value": [
+                    'folder_with_non_ascii_characters/dataset/',
+                    'folder_with_non_ascii_characters/datasets/'
+                ]
+            },
+            {
+                "tree_method": "find_obvious_directories",
                 "source_folder": "folder_with_multiple_file_types",
                 "expected_value": [
                     'folder_with_multiple_file_types/folder/',
@@ -269,9 +275,15 @@ class TestCore(Tests):
                     'folder_with_long_name_folders/folder/file.wrx',
                     'folder_with_long_name_folders/folder/file.onx',
                     'folder_with_long_name_folders/folder/file.dog',
-
                 ],
             },
+            {
+                "tree_method": "find_non_ascii_characters",
+                "source_folder": "folder_with_non_ascii_characters",
+                "expected_value": [
+                    'wïth_ñõn_æšçiį'
+                ]
+            }
         ]
         for data_dict in data:
             dir_entries = utils.scandir_recursive(TEST_DATA / data_dict["source_folder"])
@@ -320,4 +332,3 @@ class TestUtils(Tests):
         self.assertIsInstance(path_generator, types.GeneratorType)
         for dir_entry in path_generator:
             print(dir_entry, dir_entry.path)
-
