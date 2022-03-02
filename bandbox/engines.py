@@ -73,72 +73,72 @@ async def s2_detect_redundant_directories(tree, args):
     """
     # empty folders
     empty_folders = tree.find_empty_directories(include_root=args.include_root)
-    await _report(empty_folders, f"S2 - redundant directories...", args=args)
+    await _report(empty_folders, f"{'structure warning':<17} => - redundant directories...", args=args)
 
 
 async def s2_detect_obvious_directories(tree, args):
     """Detect obvious folders"""
     obvious_folders = tree.find_obvious_directories(include_root=args.include_root)
-    await _report(obvious_folders, f"S2 - obvious directory names...", args=args)
+    await _report(obvious_folders, f"{'structure warning':<17} => - obvious directory names...", args=args)
 
 
 async def s2_detect_excessive_files_per_directory(tree, args):
     """Detect excessive files per directory"""
     excess_files = tree.find_excessive_files_per_directory()
-    await _report(excess_files, f"S2 - excessives (>{args._configs.getint('bandbox', 'max_files')}) files per directory...", args=args)
+    await _report(excess_files, f"{'structure warning':<17} => - excessives (>{args._configs.getint('bandbox', 'max_files')}) files per directory...", args=args)
 
 
 async def s3_detect_directories_with_mixed_files(tree, args):
     """Detect folders with mixed files"""
     mixed_files = tree.find_directories_with_mixed_files()
-    await _report(mixed_files, f"S3 - directories with mixed files...", args=args)
+    await _report(mixed_files, f"{'structure warning':<17} => - directories with mixed files...", args=args)
 
 
 async def n2_detect_long_names(tree, args):
     """Detect entities with very long names"""
     # print(f"info: working on {tree} with {args}...")
     dirs = tree.find_long_names()
-    await _report(dirs, f"N2 - long names (>{args._configs.getint('bandbox', 'max_name_length')} chars)...", args=args)
+    await _report(dirs, f"{'name warning':<17} => - long names (>{args._configs.getint('bandbox', 'max_name_length')} chars)...", args=args)
 
 
 async def n1_detect_dates_in_names(tree, args):
     """Detect dates of various formats in names"""
     dirs = tree.find_with_date_names()
-    await _report(dirs, f"N1 - entities with dates in names...", args=args)
+    await _report(dirs, f"{'name warning':<17} => - entities with dates in names...", args=args)
 
 
 async def n1_detect_accessions_in_names(tree, args):
     """Detect accessions in names"""
     dirs = tree.find_accessions_in_names()
-    await _report(dirs, f"N1 - accessions in names...", args=args)
+    await _report(dirs, f"{'name warning':<17} => - accessions in names...", args=args)
 
 
 async def n2_detect_mixed_case(tree, args):
     """Detect mixed case"""
     dirs = tree.find_mixed_case()
-    await _report(dirs, f"N2 - mixed case in names...", args=args)
+    await _report(dirs, f"{'name warning':<17} => - mixed case in names...", args=args)
 
 
 async def n2_detect_odd_characets_in_names(tree, args):
     dirs = tree.find_odd_characters_in_names()
-    await _report(dirs, f"N2 - odd characters [{args._configs.get('bandbox', 'odd_chars')}] in names...", args=args)
+    await _report(dirs, f"{'name warning':<17} => - odd characters [one of '{args._configs.get('bandbox', 'odd_chars')}'] in names...", args=args)
 
 
 async def n2_detect_excessive_periods_in_names(tree, args):
     dirs = tree.find_excessive_periods_in_names()
-    await _report(dirs, f"N2 - excessive periods in names...", args=args)
+    await _report(dirs, f"{'name warning':<17} => - excessive periods in names...", args=args)
 
 
 async def n3_detect_external_references_in_names(tree, args):
     dirs = tree.find_external_references_in_names()
-    await _report(dirs, f"N3 - external references in names...", args=args)
+    await _report(dirs, f"{'name warning':<17} => - external references in names...", args=args)
 
 
 async def m1_detect_unknown_file_extensions(tree, args):
     dirs = tree.find_unknown_file_extensions()
-    await _report(dirs, f"M1 - unknown file extensions...", args=args)
+    await _report(dirs, f"{'misc. warning':<17} => - unknown file extensions...", args=args)
 
 
 async def n2_detect_non_ascii_characters_in_names(tree, args):
     dirs = tree.find_non_ascii_characters()
-    await _report(dirs, f"N2 - non-ascii characters in names...", args=args)
+    await _report(dirs, f"{'name warning':<17} => - non-ascii characters in names...", args=args)
