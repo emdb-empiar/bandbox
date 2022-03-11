@@ -153,6 +153,10 @@ class Tree(UserDict):
 
         def long_names_predicate(dir_entry, children_dict, parent_dict, parent_path):
             output = list()
+            if dir_entry == '_files':
+                for file in parent_dict['_files']:
+                    if len(file) > self._configs.getint('bandbox', 'max_name_length'):
+                        output.append(f"{parent_path}{file}")
             if len(dir_entry) > self._configs.getint('bandbox', 'max_name_length'):
                 output.append(f"{parent_path}{dir_entry}/")
             return output

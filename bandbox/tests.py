@@ -162,7 +162,8 @@ class TestCore(Tests):
                 "source_folder": "folder_with_long_name_folders",
                 "expected_value": [
                     'folder_with_long_name_folders/a_folder_with_a_very_long_name_that_we_cannot_even_begin_to_comprehend/',
-                    'folder_with_long_name_folders/folder/inner_folder/another_very_long_name_that_we_are_still_wondering_ever_found_the_light_of_day/'
+                    'folder_with_long_name_folders/folder/inner_folder/another_very_long_name_that_we_are_still_wondering_ever_found_the_light_of_day/',
+                    'folder_with_long_name_folders/19jul19m_series0001_ite024_ang-51.0to51.0_thick2750_pxlsz1.331.dose_comp_a0.245_b-1.665_c2.81.bin4fourier_tomo3dSIRT_30_iters.mrc',
                 ]
             },
             {
@@ -257,7 +258,8 @@ class TestCore(Tests):
                 "source_folder": "folder_with_long_name_folders",
                 "expected_value": [
                     'folder_with_long_name_folders/a.folder.with.periods.in.the.name/',
-                    'folder_with_long_name_folders/folder/a.file.with.many.periods.txt'
+                    'folder_with_long_name_folders/folder/a.file.with.many.periods.txt',
+                    'folder_with_long_name_folders/19jul19m_series0001_ite024_ang-51.0to51.0_thick2750_pxlsz1.331.dose_comp_a0.245_b-1.665_c2.81.bin4fourier_tomo3dSIRT_30_iters.mrc'
                 ],
             },
             {
