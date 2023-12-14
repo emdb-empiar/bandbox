@@ -115,17 +115,16 @@ analyse_parser.add_argument('--include-root', default=False, action='store_true'
 _add_arg(analyse_parser, prefix)
 analyse_parser.add_argument('-T', '--show-tree', default=False, action='store_true',
                             help="display the tree [default: False]")
+analyse_parser.add_argument(
+    '-a', '--all', # consistent with Linux conventions
+    action='store_true',
+    help="show all results [default: False]"
+)
 SUMMARY_SIZE = 5
 analyse_parser.add_argument(
     '-s', '--summarise-size',
     default=SUMMARY_SIZE, type=int,
     help=f"summarise size [default: {SUMMARY_SIZE}]"
-)
-analyse_parser.add_argument(
-    '-S', '--summarise',
-    default=False,
-    action='store_true',
-    help=f"summarise to --summary-size ({SUMMARY_SIZE}) results in each group [default: False]"
 )
 _add_arg(analyse_parser, hide_file_counts)
 

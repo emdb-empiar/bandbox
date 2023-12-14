@@ -24,7 +24,7 @@ import requests
 
 from bandbox import cli, models, utils, managers
 
-BASE_DIR = pathlib.Path("/Users/pkorir/PycharmProjects/bandbox")
+BASE_DIR = pathlib.Path(__file__).parent.parent
 TEST_DATA = BASE_DIR / "test_data"
 TEST_CONFIG = BASE_DIR / "bandbox.cfg"
 
@@ -68,7 +68,7 @@ class TestCLI(Tests):
         self.assertEqual('analyse', args.command)
         self.assertEqual(pathlib.Path('.'), args.path)
         self.assertFalse(args.include_root)
-        self.assertFalse(args.summarise)
+        self.assertFalse(args.all)
         self.assertEqual(5, args.summarise_size)
         self.assertFalse(args.verbose)
         self.assertIsNotNone(args.config_file)
@@ -129,7 +129,7 @@ class TestCore(Tests):
             {
                 "tree_method": "find_mixed_case",
                 "source_folder": "folder_with_multiple_files",
-                "expected_value": ['folder_with_multiple_files/folder/file-EMPIAR-someting.tif']
+                "expected_value": ['folder_with_multiple_files/folder/file-EMPIAR-someting.tif'] # we should not get 'README.md file
             },
             {
                 "tree_method": "find_accessions_in_names",

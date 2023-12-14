@@ -210,7 +210,9 @@ class Tree(UserDict):
             output = list()
             if dir_entry == '_files':  # file contents
                 for file in parent_dict['_files']:
-                    if re.match(r".*[A-Z].*", file) and re.match(r".*[a-z].*", file):  # mixed case
+                    # exclude the file extension
+                    _file = file.rsplit('.', 1)[0]
+                    if re.match(r".*[A-Z].*", _file) and re.match(r".*[a-z].*", _file):  # mixed case
                         output.append(f"{parent_path}{file}")
             if re.match(r".*[A-Z].*", dir_entry) and re.match(r".*[a-z].*", dir_entry):  # if the dirname has mixed case
                 output.append(f"{parent_path}{dir_entry}/")
